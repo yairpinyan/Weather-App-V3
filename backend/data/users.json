@@ -1,0 +1,12 @@
+{
+  "users": [
+    {
+      "email": "test@example.com",
+      "favoriteCities": [
+        "London"
+      ],
+      "createdAt": "2025-08-05T16:50:27.008Z",
+      "updatedAt": "2025-08-05T16:50:34.173Z"
+    }
+  ]
+}

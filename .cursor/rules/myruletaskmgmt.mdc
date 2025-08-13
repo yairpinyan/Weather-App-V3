@@ -1,0 +1,42 @@
+---
+alwaysApply: true
+---
+# Cursor Todo Management Rules
+
+## Core Behavior Rules
+
+### Rule 1: Task Logging on Request
+When a user asks me to do something:
+1. ALWAYS check if `.cursor-todo.md` exists, create it if it doesn't
+2. Generate a unique task ID (format: TASK-YYYYMMDD-XXX)
+3. Log the request as a new task with:
+   - Task ID and title
+   - Current timestamp
+   - Detailed description
+   - Break down into 3-5 actionable subtasks
+   - Set status as "Pending"
+4. Update the file BEFORE starting work
+5. Inform user: "Task logged as [TASK-ID]. Starting work on: [task description]"
+
+### Rule 2: Progress Logging
+When completing any task or subtask:
+1. Update the `.cursor-todo.md` file immediately
+2. Mark subtasks as completed with [x]
+3. Add completion timestamp
+4. If main task is complete, move to "Completed Tasks" section
+5. Log result/outcome achieved
+6. Inform user: "✅ [Task/Subtask] completed successfully and logged"
+
+### Rule 3: Session Startup Protocol
+At the start of any conversation:
+1. IMMEDIATELY check for `.cursor-todo.md`
+2. If it exists, read and analyze:
+   - Active tasks and their progress
+   - Last session context
+   - Incomplete subtasks
+3. Greet user with context summary:
+   "Welcome back! I found [X] active tasks from our previous work:
+   - [Task 1]: [status and next steps]
+   - [Task 2]: [status and next steps]
+   
+   Should I continue with any of these, or do you have new tasks?"
