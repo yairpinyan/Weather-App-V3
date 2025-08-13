@@ -1,0 +1,211 @@
+# Weather App - Windows Setup & Run Instructions
+
+## Prerequisites
+
+Before you begin, make sure you have the following installed on your Windows machine:
+
+1. **Node.js** (version 18 or higher)
+   - Download from: https://nodejs.org/
+   - Choose the LTS (Long Term Support) version
+   - Install with default settings
+
+2. **Git** (for cloning the repository)
+   - Download from: https://git-scm.com/
+   - Install with default settings
+
+3. **A modern web browser** (Chrome, Firefox, Edge, etc.)
+
+## Step 1: Clone the Repository
+
+Open Command Prompt or PowerShell and run:
+
+```bash
+git clone <your-github-repo-url>
+cd weather-app-v3
+```
+
+## Step 2: Install Backend Dependencies
+
+Navigate to the backend directory and install dependencies:
+
+```bash
+cd backend
+npm install
+```
+
+This will install all required packages including:
+- Express.js (web framework)
+- TypeScript (development)
+- Jest (testing)
+- CORS (cross-origin support)
+- Node-fetch (HTTP requests)
+
+## Step 3: Install Frontend Dependencies
+
+Navigate to the frontend directory and install dependencies:
+
+```bash
+cd ../frontend
+npm install
+```
+
+This will install all required packages including:
+- React 19
+- Vite (build tool)
+- TypeScript
+- Tailwind CSS
+- Axios (HTTP client)
+
+## Step 4: Build the Backend
+
+Navigate back to the backend directory and build the TypeScript code:
+
+```bash
+cd ../backend
+npm run build
+```
+
+This compiles the TypeScript code into JavaScript in the `dist/` folder.
+
+## Step 5: Start the Backend Server
+
+Start the backend server (it will run on port 5000):
+
+```bash
+npm start
+```
+
+**Alternative method for development (auto-restart on changes):**
+```bash
+npm run dev
+```
+
+You should see output indicating the server is running on port 5000.
+
+## Step 6: Start the Frontend Server
+
+Open a new Command Prompt or PowerShell window and navigate to the frontend directory:
+
+```bash
+cd path\to\weather-app-v3\frontend
+npm run dev
+```
+
+This will start the Vite development server on port 5173.
+
+## Step 7: Access the Application
+
+1. **Backend API**: http://localhost:5000
+   - Test with: http://localhost:5000/ (should show "Welcome to Weather App API")
+   - Weather endpoint: http://localhost:5000/api/weather/London
+
+2. **Frontend App**: http://localhost:5173
+   - This opens the main weather application interface
+
+## Alternative: Use the Batch File (Easiest Method)
+
+If you prefer a one-click solution, the project includes a `start-servers.bat` file:
+
+1. Double-click `start-servers.bat` in the project root
+2. This will automatically:
+   - Kill any existing processes on ports 5000 and 5173
+   - Start the backend server
+   - Start the frontend server
+   - Open the app in your default browser
+
+## Troubleshooting
+
+### Port Already in Use
+If you get "port already in use" errors:
+
+```bash
+# Find processes using ports 5000 and 5173
+netstat -aon | find ":5000"
+netstat -aon | find ":5173"
+
+# Kill the process (replace PID with the actual process ID)
+taskkill /f /pid <PID>
+```
+
+### Node Modules Issues
+If you encounter dependency issues:
+
+```bash
+# Clear npm cache
+npm cache clean --force
+
+# Delete node_modules and reinstall
+cd backend
+rmdir /s node_modules
+npm install
+
+cd ../frontend
+rmdir /s node_modules
+npm install
+```
+
+### TypeScript Compilation Errors
+If the backend build fails:
+
+```bash
+cd backend
+npm run build
+```
+
+Check for any TypeScript errors in the output and fix them before proceeding.
+
+## Project Structure
+
+```
+weather-app-v3/
+├── backend/                 # Backend server (Node.js + Express + TypeScript)
+│   ├── src/                # Source code
+│   ├── dist/               # Compiled JavaScript (created after build)
+│   ├── package.json        # Backend dependencies
+│   └── tsconfig.json       # TypeScript configuration
+├── frontend/               # Frontend app (React + Vite + TypeScript)
+│   ├── src/                # Source code
+│   ├── package.json        # Frontend dependencies
+│   └── tsconfig.json       # TypeScript configuration
+├── start-servers.bat       # Windows batch file to start both services
+└── instructions_to_run.txt # This file
+```
+
+## Available Scripts
+
+### Backend Scripts
+- `npm start` - Start the production server
+- `npm run dev` - Start development server with auto-restart
+- `npm run build` - Build TypeScript to JavaScript
+- `npm test` - Run tests
+- `npm run validate` - Validate backend functionality
+
+### Frontend Scripts
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run preview` - Preview production build
+
+## Features
+
+The Weather App includes:
+- **Global Weather Forecasts**: View weather for major cities worldwide
+- **City Search**: Add custom cities to your forecast list
+- **Geolocation**: Get weather for your current location
+- **Responsive Design**: Works on desktop and mobile devices
+- **Real-time Data**: Fetches current weather data from external APIs
+
+## Support
+
+If you encounter any issues:
+1. Check that all prerequisites are installed correctly
+2. Ensure no other applications are using ports 5000 or 5173
+3. Verify that all dependencies were installed successfully
+4. Check the console output for any error messages
+
+## Notes
+
+- The backend uses TypeScript and compiles to JavaScript in the `dist/` folder
+- The frontend uses Vite for fast development and building
+- Both services need to be running simultaneously for the app to work
+- The app fetches weather data from external APIs through the backend
+- All data is cached locally for better performance
