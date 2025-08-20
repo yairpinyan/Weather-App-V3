@@ -31,6 +31,13 @@ function App() {
       console.log(`🎨 Processing change ${index + 1}:`, change);
       
       try {
+        // Handle sorting changes first
+        if (change.targetElement === 'cities' && change.property === 'sortBy') {
+          console.log(`📊 Applying city sorting change: ${change.value}`);
+          applyCitySorting(change.value);
+          return; // Skip DOM manipulation for sorting
+        }
+        
         if (change.targetElement === 'body') {
           // Apply to body element
           console.log(`🎨 Targeting body element with ${change.property}: ${change.value}`);
@@ -157,6 +164,44 @@ function App() {
       const popB = data[b]?.location?.population || 0;
       return popB - popA; // Sort in descending order
     });
+    setCities(sortedCities);
+  };
+
+  // Apply different sorting methods based on AI chat commands
+  const applyCitySorting = (sortMethod: string) => {
+    console.log(`📊 Applying city sorting method: ${sortMethod}`);
+    
+    const cityList = Object.keys(weatherData);
+    let sortedCities: string[] = [];
+    
+    switch (sortMethod) {
+      case 'temperature':
+        // Sort by current temperature (using first day's max temp)
+        sortedCities = [...cityList].sort((a, b) => {
+          const tempA = weatherData[a]?.daily?.temperature_2m_max?.[0] || 0;
+          const tempB = weatherData[b]?.daily?.temperature_2m_max?.[0] || 0;
+          return tempB - tempA; // Sort in descending order (hottest first)
+        });
+        break;
+        
+      case 'alphabetical':
+        // Sort alphabetically A-Z
+        sortedCities = [...cityList].sort((a, b) => a.localeCompare(b));
+        break;
+        
+      case 'population':
+      default:
+        // Default: sort by population (descending)
+        sortedCities = [...cityList].sort((a, b) => {
+          const popA = weatherData[a]?.location?.population || 0;
+          const popB = weatherData[b]?.location?.population || 0;
+          return popB - popA;
+        });
+        break;
+    }
+    
+    console.log(`📊 Cities before sorting:`, cityList);
+    console.log(`📊 Cities after sorting (${sortMethod}):`, sortedCities);
     setCities(sortedCities);
   };
 

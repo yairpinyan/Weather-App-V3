@@ -152,8 +152,8 @@ export const processChatMessage = async (
     };
   }
   
-  if (lowerMessage.includes('sort') || lowerMessage.includes('order')) {
-    console.log('📊 Sorting change detected');
+  // Match 'sort', 're-sort', 'resort', 'order', 'reorder' as standalone intents, avoiding 'border', etc.
+  if (/\b(re-?sort|sort|re-?order|order)\b/.test(lowerMessage)) {    console.log('📊 Sorting change detected');
     
     if (lowerMessage.includes('temperature')) {
       customizations.push({
@@ -192,6 +192,43 @@ export const processChatMessage = async (
         customizations
       };
     }
+    
+    if (lowerMessage.includes('population') || lowerMessage.includes('pop')) {
+      customizations.push({
+        id: `sort-${Date.now()}`,
+        timestamp: new Date(),
+        description: `Changed city sorting to population-based based on request: "${message}"`,
+        changes: [{
+          targetElement: 'cities',
+          property: 'sortBy',
+          value: 'population',
+          previousValue: 'custom'
+        }]
+      });
+      
+      return {
+        response: `📊 I've changed the city sorting to population-based! Cities are now ordered by population (largest first).`,
+        customizations
+      };
+    }
+    
+    // Default sorting response for generic sort requests
+    customizations.push({
+      id: `sort-${Date.now()}`,
+      timestamp: new Date(),
+      description: `Changed city sorting to population-based based on request: "${message}"`,
+      changes: [{
+        targetElement: 'cities',
+        property: 'sortBy',
+        value: 'population',
+        previousValue: 'custom'
+      }]
+    });
+    
+    return {
+      response: `📊 I've changed the city sorting! Cities are now ordered by population (largest first). You can also specify "sort by temperature", "sort alphabetically", or "sort by population".`,
+      customizations
+    };
   }
   
   if (lowerMessage.includes('icon') || lowerMessage.includes('emoji')) {
