@@ -4,6 +4,7 @@ import cors from 'cors';
 
 import userRoutes from './routes/userRoutes';
 import weatherRoutes from './routes/weatherRoutes';
+import chatRoutes from './routes/chatRoutes';
 
 // Load environment variables
 dotenv.config();
@@ -18,6 +19,7 @@ app.use(express.json());
 // Routes
 app.use('/api', userRoutes);
 app.use('/api', weatherRoutes);
+app.use('/api', chatRoutes);
 
 // Basic route
 app.get('/', (req: Request, res: Response) => {

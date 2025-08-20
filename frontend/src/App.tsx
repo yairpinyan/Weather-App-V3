@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { WeatherPanel } from './components/WeatherPanel';
 import { weatherService } from './services/weatherService';
-import type { WeatherData } from './types/weather';
+import type { WeatherData, GUICustomization } from './types/weather';
 import { useGeolocationWeather } from './utils/useGeolocationWeather';
+import ChatPanel from './components/ChatPanel';
+import ChatToggle from './components/ChatToggle';
 
 const DEFAULT_CITIES = ['London', 'New York', 'Tokyo', 'Paris', 'Sydney'];
 
@@ -12,11 +14,125 @@ function App() {
   const [weatherData, setWeatherData] = useState<Record<string, WeatherData>>({});
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [appliedCustomizations, setAppliedCustomizations] = useState<GUICustomization[]>([]);
   const { geoWeather, error: geoError } = useGeolocationWeather();
 
   useEffect(() => {
     loadDefaultCities();
   }, []);
+
+  // Apply customizations to the DOM
+  const applyCustomization = (customization: GUICustomization) => {
+    console.log('🎨 Applying customization:', customization);
+    console.log('🎨 Customization changes:', customization.changes);
+    
+    customization.changes.forEach((change, index) => {
+      console.log(`🎨 Processing change ${index + 1}:`, change);
+      
+      try {
+        if (change.targetElement === 'body') {
+          // Apply to body element
+          console.log(`🎨 Targeting body element with ${change.property}: ${change.value}`);
+          document.body.style.setProperty(change.property, change.value, 'important');
+          console.log(`✅ Applied ${change.property}: ${change.value} to body`);
+          console.log(`✅ Body style now:`, document.body.style.getPropertyValue(change.property));
+        } else {
+          // Apply to specific CSS selectors
+          console.log(`🎨 Targeting selector: ${change.targetElement}`);
+          const elements = document.querySelectorAll(change.targetElement);
+          console.log(`🎨 Found ${elements.length} elements for selector: ${change.targetElement}`);
+          
+          if (elements.length > 0) {
+            elements.forEach((element, i) => {
+              console.log(`🎨 Applying to element ${i + 1}:`, element);
+              
+              // Remove conflicting Tailwind background classes
+              if (change.property === 'backgroundColor') {
+                const elementEl = element as HTMLElement;
+                
+                if (change.value === 'reset') {
+                  // Reset to original state
+                  elementEl.style.removeProperty('background-color');
+                  elementEl.classList.add('bg-gray-100');
+                  console.log(`🔄 Reset background to original state`);
+                } else {
+                  // Apply custom color
+                  elementEl.classList.remove('bg-gray-100', 'bg-white', 'bg-blue-100', 'bg-red-100', 'bg-green-100');
+                  console.log(`🎨 Removed conflicting Tailwind background classes`);
+                  
+                  // Try multiple approaches to ensure the color is applied
+                  elementEl.style.setProperty('background-color', change.value, 'important');
+                  elementEl.style.setProperty('background', change.value, 'important');
+                  console.log(`✅ Applied background-color: ${change.value} to element ${i + 1}`);
+                  console.log(`✅ Applied background: ${change.value} to element ${i + 1}`);
+                  
+                  // Also try setting body background as fallback
+                  document.body.style.setProperty('background-color', change.value, 'important');
+                  console.log(`✅ Applied background-color: ${change.value} to body as fallback`);
+                  
+                  // Debug: Check what CSS was actually applied
+                  console.log(`🔍 Element style after application:`, elementEl.style.cssText);
+                  console.log(`🔍 Computed backgroundColor:`, window.getComputedStyle(elementEl).backgroundColor);
+                  console.log(`🔍 Computed background:`, window.getComputedStyle(elementEl).background);
+                  console.log(`🔍 Body computed backgroundColor:`, window.getComputedStyle(document.body).backgroundColor);
+                  
+                  // Add visual feedback - temporary highlight
+                  elementEl.style.transition = 'background-color 0.3s ease';
+                  elementEl.style.boxShadow = '0 0 20px rgba(59, 130, 246, 0.5)';
+                  setTimeout(() => {
+                    elementEl.style.boxShadow = '';
+                  }, 1000);
+                  console.log(`🎨 Added visual feedback effect`);
+                }
+              } else {
+                // Handle other properties normally
+                (element as HTMLElement).style.setProperty(change.property, change.value, 'important');
+                console.log(`✅ Applied ${change.property}: ${change.value} to element ${i + 1}`);
+              }
+            });
+          } else {
+            console.warn(`⚠️ No elements found for selector: ${change.targetElement}`);
+          }
+        }
+      } catch (err) {
+        console.error(`❌ Failed to apply ${change.property}: ${change.value}`, err);
+      }
+    });
+  };
+
+  // Reset background to original state
+  const resetBackground = () => {
+    const mainElement = document.getElementById('weather-app-main');
+    if (mainElement) {
+      mainElement.style.removeProperty('background-color');
+      mainElement.classList.add('bg-gray-100');
+      console.log('🎨 Reset background to original state');
+    }
+  };
+
+  // Handle customizations from AI chat
+  const handleCustomization = (customizations: GUICustomization[]) => {
+    console.log('🎨 Received customizations:', customizations);
+    console.log('🎨 Number of customizations:', customizations.length);
+    
+    if (customizations && customizations.length > 0) {
+      console.log('🎨 Processing customizations...');
+      
+      // Apply each customization
+      customizations.forEach((customization, index) => {
+        console.log(`🎨 Processing customization ${index + 1}:`, customization);
+        applyCustomization(customization);
+      });
+      
+      // Store applied customizations for potential undo functionality
+      setAppliedCustomizations(prev => [...prev, ...customizations]);
+      
+      console.log('✅ All customizations applied successfully');
+    } else {
+      console.warn('⚠️ No customizations received or empty array');
+    }
+  };
 
   const loadDefaultCities = async () => {
     try {
@@ -86,7 +202,7 @@ function App() {
   const isGeoCityInList = geoWeather && cities.some(city => city.toLowerCase() === geoWeather.location.name.toLowerCase());
 
   return (
-    <div className="min-h-screen bg-gray-100 py-8">
+    <div id="weather-app-main" className="min-h-screen bg-gray-100 py-8">
       <div className="container mx-auto px-4 max-w-4xl">
         <h1 className="text-3xl font-bold mb-6 bg-gradient-to-r from-green-400 via-pink-500 to-blue-500 animate-gradient text-transparent bg-clip-text">Global Weather Forecast</h1>
         
@@ -148,6 +264,15 @@ function App() {
           })}
         </div>
       </div>
+      
+      {/* AI Chat Interface */}
+      <ChatToggle isOpen={isChatOpen} onToggle={() => setIsChatOpen(!isChatOpen)} />
+      <ChatPanel 
+        isOpen={isChatOpen} 
+        onToggle={() => setIsChatOpen(false)}
+        onCustomization={handleCustomization}
+        onReset={resetBackground}
+      />
     </div>
   );
 }
