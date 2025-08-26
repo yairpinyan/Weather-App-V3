@@ -1,9 +1,9 @@
-import { Router } from 'express';
+import express from 'express';
 import { processChatMessage } from '../controllers/chatController';
 
-const router = Router();
+const router = express.Router();
 
 // AI Chat Customization endpoint
-router.post('/chat/customize', processChatMessage);
+router.post('/chat', processChatMessage);
 
 export default router;

@@ -1,239 +1,20 @@
-import type { GUICustomization, ChatResult } from '../types/chat';
+import { ChatResult, GUICustomization } from '../types/chat';
 
-// For now, we'll implement a basic rule-based system
-// Later, this will be replaced with actual LLM integration
+// Simple, working chat service with icon support
 export const processChatMessage = async (
-  message: string, 
+  message: string,
   currentCustomizations: GUICustomization[]
 ): Promise<ChatResult> => {
-  
+
   console.log('🔍 Processing message:', message);
+  console.log('🔍 Current customizations:', currentCustomizations);
   const lowerMessage = message.toLowerCase();
   const customizations: GUICustomization[] = [];
-  
-  // Basic intent classification and entity extraction
-  if (lowerMessage.includes('background')) {
-    console.log('🎨 Background change detected');
-    
-    // Handle specific color requests
-    if (lowerMessage.includes('blue')) {
-      customizations.push({
-        id: `bg-color-${Date.now()}`,
-        timestamp: new Date(),
-        description: `Changed background to blue based on request: "${message}"`,
-        changes: [{
-          targetElement: '#weather-app-main',
-          property: 'backgroundColor',
-          value: '#3b82f6', // Blue-500
-          previousValue: '#f3f4f6'
-        }]
-      });
-      
-      return {
-        response: `🎨 I've changed the background color to blue! The interface should now have a blue background.`,
-        customizations
-      };
-    }
-    
-    if (lowerMessage.includes('red')) {
-      customizations.push({
-        id: `bg-color-${Date.now()}`,
-        timestamp: new Date(),
-        description: `Changed background to red based on request: "${message}"`,
-        changes: [{
-          targetElement: '#weather-app-main',
-          property: 'backgroundColor',
-          value: '#ef4444', // Red-500
-          previousValue: '#f3f4f6'
-        }]
-      });
-      
-      return {
-        response: `🎨 I've changed the background color to red! The interface should now have a red background.`,
-        customizations
-      };
-    }
-    
-    if (lowerMessage.includes('green')) {
-      customizations.push({
-        id: `bg-color-${Date.now()}`,
-        timestamp: new Date(),
-        description: `Changed background to green based on request: "${message}"`,
-        changes: [{
-          targetElement: '#weather-app-main',
-          property: 'backgroundColor',
-          value: '#10b981', // Green-500
-          previousValue: '#f3f4f6'
-        }]
-      });
-      
-      return {
-        response: `🎨 I've changed the background color to green! The interface should now have a green background.`,
-        customizations
-      };
-    }
-    
-    // Generic background color change
-    customizations.push({
-      id: `bg-color-${Date.now()}`,
-      timestamp: new Date(),
-      description: `Changed background color based on request: "${message}"`,
-      changes: [{
-        targetElement: '#weather-app-main',
-        property: 'backgroundColor',
-        value: '#f0f0f0', // Default light gray
-        previousValue: '#f3f4f6'
-      }]
-    });
-    
-    return {
-      response: `🎨 I've changed the background color! You can be more specific by saying "make the background blue", "make it red", or "change to green".`,
-      customizations
-    };
-  }
-  
-  if (lowerMessage.includes('text') || lowerMessage.includes('font')) {
-    console.log('📝 Text change detected');
-    
-    if (lowerMessage.includes('red')) {
-      customizations.push({
-        id: `text-color-${Date.now()}`,
-        timestamp: new Date(),
-        description: `Changed text color to red based on request: "${message}"`,
-        changes: [{
-          targetElement: '.text-gray-800, .text-gray-700, h1, h2, h3, p',
-          property: 'color',
-          value: '#ef4444', // Red-500
-          previousValue: '#374151'
-        }]
-      });
-      
-      return {
-        response: `📝 I've changed the text color to red! All text should now appear in red.`,
-        customizations
-      };
-    }
-    
-    if (lowerMessage.includes('blue')) {
-      customizations.push({
-        id: `text-color-${Date.now()}`,
-        timestamp: new Date(),
-        description: `Changed text color to blue based on request: "${message}"`,
-        changes: [{
-          targetElement: '.text-gray-800, .text-gray-700, h1, h2, h3, p',
-          property: 'color',
-          value: '#3b82f6', // Blue-500
-          previousValue: '#374151'
-        }]
-      });
-      
-      return {
-        response: `📝 I've changed the text color to blue! All text should now appear in blue.`,
-        customizations
-      };
-    }
-    
-    // Generic text color change
-    customizations.push({
-      id: `text-color-${Date.now()}`,
-      timestamp: new Date(),
-      description: `Changed text color based on request: "${message}"`,
-      changes: [{
-        targetElement: '.text-gray-800, .text-gray-700, h1, h2, h3, p',
-        property: 'color',
-        value: '#1f2937', // Dark gray
-        previousValue: '#374151'
-      }]
-    });
-    
-    return {
-      response: `📝 I've adjusted the text color! You can specify exact colors like "make text red" or "change text to blue".`,
-      customizations
-    };
-  }
-  
-  // Match 'sort', 're-sort', 'resort', 'order', 'reorder' as standalone intents, avoiding 'border', etc.
-  if (/\b(re-?sort|sort|re-?order|order)\b/.test(lowerMessage)) {    console.log('📊 Sorting change detected');
-    
-    if (lowerMessage.includes('temperature')) {
-      customizations.push({
-        id: `sort-${Date.now()}`,
-        timestamp: new Date(),
-        description: `Changed city sorting to temperature-based based on request: "${message}"`,
-        changes: [{
-          targetElement: 'cities',
-          property: 'sortBy',
-          value: 'temperature',
-          previousValue: 'population'
-        }]
-      });
-      
-      return {
-        response: `📊 I've changed the city sorting to be based on temperature! Cities will now be ordered by their current temperature.`,
-        customizations
-      };
-    }
-    
-    if (lowerMessage.includes('alphabetical') || lowerMessage.includes('name')) {
-      customizations.push({
-        id: `sort-${Date.now()}`,
-        timestamp: new Date(),
-        description: `Changed city sorting to alphabetical based on request: "${message}"`,
-        changes: [{
-          targetElement: 'cities',
-          property: 'sortBy',
-          value: 'alphabetical',
-          previousValue: 'population'
-        }]
-      });
-      
-      return {
-        response: `📊 I've changed the city sorting to alphabetical order! Cities will now be listed A-Z.`,
-        customizations
-      };
-    }
-    
-    if (lowerMessage.includes('population') || lowerMessage.includes('pop')) {
-      customizations.push({
-        id: `sort-${Date.now()}`,
-        timestamp: new Date(),
-        description: `Changed city sorting to population-based based on request: "${message}"`,
-        changes: [{
-          targetElement: 'cities',
-          property: 'sortBy',
-          value: 'population',
-          previousValue: 'custom'
-        }]
-      });
-      
-      return {
-        response: `📊 I've changed the city sorting to population-based! Cities are now ordered by population (largest first).`,
-        customizations
-      };
-    }
-    
-    // Default sorting response for generic sort requests
-    customizations.push({
-      id: `sort-${Date.now()}`,
-      timestamp: new Date(),
-      description: `Changed city sorting to population-based based on request: "${message}"`,
-      changes: [{
-        targetElement: 'cities',
-        property: 'sortBy',
-        value: 'population',
-        previousValue: 'custom'
-      }]
-    });
-    
-    return {
-      response: `📊 I've changed the city sorting! Cities are now ordered by population (largest first). You can also specify "sort by temperature", "sort alphabetically", or "sort by population".`,
-      customizations
-    };
-  }
-  
+
+  // Handle icon-related requests
   if (lowerMessage.includes('icon') || lowerMessage.includes('emoji')) {
     console.log('🎯 Icon change detected');
-    
+
     if (lowerMessage.includes('add') || lowerMessage.includes('show')) {
       customizations.push({
         id: `icon-${Date.now()}`,
@@ -246,46 +27,216 @@ export const processChatMessage = async (
           previousValue: 'false'
         }]
       });
-      
-      return {
+
+      const result = {
         response: `🎯 I've added weather icons to the city panels! Each city will now show a weather icon based on current conditions.`,
+        customizations
+      };
+      console.log('🎯 Returning icon add result:', result);
+      return result;
+    }
+
+    if (lowerMessage.includes('hide') || lowerMessage.includes('remove') || lowerMessage.includes('delete')) {
+      customizations.push({
+        id: `icon-${Date.now()}`,
+        timestamp: new Date(),
+        description: `Hidden weather icons based on request: "${message}"`,
+        changes: [{
+          targetElement: '.weather-panel',
+          property: 'showIcons',
+          value: 'false',
+          previousValue: 'true'
+        }]
+      });
+
+      return {
+        response: `🎯 I've hidden the weather icons from the city panels! The icons are now hidden and won't be visible.`,
         customizations
       };
     }
   }
-  
-  if (lowerMessage.includes('reset') || lowerMessage.includes('undo') || lowerMessage.includes('original')) {
-    console.log('🔄 Reset command detected');
+
+  // Handle background color changes
+  if (lowerMessage.includes('background') || lowerMessage.includes('bg')) {
+    if (lowerMessage.includes('blue')) {
+      customizations.push({
+        id: `bg-${Date.now()}`,
+        timestamp: new Date(),
+        description: `Changed background to blue based on request: "${message}"`,
+        changes: [{
+          targetElement: 'body',
+          property: 'backgroundColor',
+          value: '#3b82f6',
+          previousValue: '#ffffff'
+        }]
+      });
+      return {
+        response: `🎨 I've changed the background to a nice blue color!`,
+        customizations
+      };
+    }
     
+    if (lowerMessage.includes('green')) {
+      customizations.push({
+        id: `bg-${Date.now()}`,
+        timestamp: new Date(),
+        description: `Changed background to green based on request: "${message}"`,
+        changes: [{
+          targetElement: 'body',
+          property: 'backgroundColor',
+          value: '#10b981',
+          previousValue: '#ffffff'
+        }]
+      });
+      return {
+        response: `🎨 I've changed the background to a refreshing green color!`,
+        customizations
+      };
+    }
+
+    if (lowerMessage.includes('reset') || lowerMessage.includes('default') || lowerMessage.includes('white')) {
+      customizations.push({
+        id: `bg-reset-${Date.now()}`,
+        timestamp: new Date(),
+        description: `Reset background to default based on request: "${message}"`,
+        changes: [{
+          targetElement: 'body',
+          property: 'backgroundColor',
+          value: '#ffffff',
+          previousValue: 'current'
+        }]
+      });
+      return {
+        response: `🔄 I've reset the background to the default white color!`,
+        customizations
+      };
+    }
+  }
+
+  // Handle text color changes
+  if (lowerMessage.includes('text') && lowerMessage.includes('color')) {
+    if (lowerMessage.includes('white')) {
+      customizations.push({
+        id: `text-${Date.now()}`,
+        timestamp: new Date(),
+        description: `Changed text color to white based on request: "${message}"`,
+        changes: [{
+          targetElement: '.weather-panel',
+          property: 'color',
+          value: '#ffffff',
+          previousValue: '#000000'
+        }]
+      });
+      return {
+        response: `🎨 I've changed the text color to white for better visibility!`,
+        customizations
+      };
+    }
+  }
+
+  // Handle city sorting
+  if (lowerMessage.includes('sort') || lowerMessage.includes('re-sort') || lowerMessage.includes('resort')) {
+    if (lowerMessage.includes('temperature') || lowerMessage.includes('temp')) {
+      customizations.push({
+        id: `sort-${Date.now()}`,
+        timestamp: new Date(),
+        description: `Sort cities by temperature based on request: "${message}"`,
+        changes: [{
+          targetElement: '.cities-container',
+          property: 'sortBy',
+          value: 'temperature',
+          previousValue: 'default'
+        }]
+      });
+      return {
+        response: `📊 I've sorted the cities by temperature! The cities are now ordered from coldest to warmest.`,
+        customizations
+      };
+    }
+    
+    if (lowerMessage.includes('population') || lowerMessage.includes('pop')) {
+      customizations.push({
+        id: `sort-${Date.now()}`,
+        timestamp: new Date(),
+        description: `Sort cities by population based on request: "${message}"`,
+        changes: [{
+          targetElement: '.cities-container',
+          property: 'sortBy',
+          value: 'population',
+          previousValue: 'default'
+        }]
+      });
+      return {
+        response: `📊 I've sorted the cities by population! The cities are now ordered from smallest to largest population.`,
+        customizations
+      };
+    }
+    
+    if (lowerMessage.includes('alphabetical') || lowerMessage.includes('name')) {
+      customizations.push({
+        id: `sort-${Date.now()}`,
+        timestamp: new Date(),
+        description: `Sort cities alphabetically based on request: "${message}"`,
+        changes: [{
+          targetElement: '.cities-container',
+          property: 'sortBy',
+          value: 'alphabetical',
+          previousValue: 'default'
+        }]
+      });
+      return {
+        response: `📊 I've sorted the cities alphabetically! The cities are now ordered A-Z by name.`,
+        customizations
+      };
+    }
+  }
+
+  // Handle reset all customizations
+  if (lowerMessage.includes('reset') && (lowerMessage.includes('all') || lowerMessage.includes('everything'))) {
     customizations.push({
-      id: `reset-${Date.now()}`,
+      id: `reset-all-${Date.now()}`,
       timestamp: new Date(),
-      description: `Reset background to original state based on request: "${message}"`,
-      changes: [{
-        targetElement: '#weather-app-main',
-        property: 'backgroundColor',
-        value: 'reset',
-        previousValue: 'custom'
-      }]
+      description: `Reset all customizations based on request: "${message}"`,
+      changes: [
+        {
+          targetElement: 'body',
+          property: 'backgroundColor',
+          value: '#ffffff',
+          previousValue: 'current'
+        },
+        {
+          targetElement: '.weather-panel',
+          property: 'color',
+          value: '#000000',
+          previousValue: 'current'
+        },
+        {
+          targetElement: '.weather-panel',
+          property: 'showIcons',
+          value: 'false',
+          previousValue: 'current'
+        }
+      ]
     });
-    
     return {
-      response: `🔄 I've reset the background to its original gray color! You can now customize it again.`,
+      response: `🔄 I've reset all customizations! Everything is back to the default appearance.`,
       customizations
     };
   }
-  
+
   // Default response for unrecognized requests
   console.log('❓ No specific pattern matched, returning default response');
-  return {
-    response: `I understand you want to customize the interface. I can help you with:
+  const defaultResult = {
+    response: `I understand you want to customize the interface. I can help you:
+    
+🎨 **Colors**: Change background colors (blue, green, white) or text colors
+🎯 **Icons**: Add or hide weather icons on the city panels
+📊 **Sorting**: Sort cities by temperature, population, or alphabetically
+🔄 **Reset**: Reset all customizations or specific elements
 
-• Changing colors (background, text, borders)
-• Sorting cities (by temperature, alphabetical, population)
-• Adding icons and visual elements
-• Modifying layout and spacing
-
-Try being more specific, like "make the background blue" or "sort cities by temperature".`,
+Try asking me to "add weather icons", "change background to blue", or "sort cities by temperature"!`,
     customizations: []
   };
+  console.log('❓ Returning default result:', defaultResult);
+  return defaultResult;
 };

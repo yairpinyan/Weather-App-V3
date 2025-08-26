@@ -1,323 +1,365 @@
-import { useState, useEffect } from 'react';
-import { WeatherPanel } from './components/WeatherPanel';
-import { weatherService } from './services/weatherService';
-import type { WeatherData, GUICustomization } from './types/weather';
-import { useGeolocationWeather } from './utils/useGeolocationWeather';
-import ChatPanel from './components/ChatPanel';
+import React, { useState, useEffect } from 'react';
+import WeatherPanel from './components/WeatherPanel';
 import ChatToggle from './components/ChatToggle';
-
-const DEFAULT_CITIES = ['London', 'New York', 'Tokyo', 'Paris', 'Sydney'];
+import ChatPanel from './components/ChatPanel';
+import { WeatherData } from './types/weather';
+import { GUICustomization } from './types/chat';
+import './App.css';
 
 function App() {
-  const [cities, setCities] = useState<string[]>(DEFAULT_CITIES);
-  const [searchInput, setSearchInput] = useState('');
   const [weatherData, setWeatherData] = useState<Record<string, WeatherData>>({});
-  const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
-  const [appliedCustomizations, setAppliedCustomizations] = useState<GUICustomization[]>([]);
-  const { geoWeather, error: geoError } = useGeolocationWeather();
+  const [customizations, setCustomizations] = useState<GUICustomization[]>([]);
 
-  useEffect(() => {
-    loadDefaultCities();
-  }, []);
+  // Apply icon visibility changes
+  const applyIconVisibility = (showIcons: boolean) => {
+    console.log(`🎯 Setting icon visibility to: ${showIcons}`);
 
-  // Apply customizations to the DOM
+    const weatherPanels = document.querySelectorAll('.weather-panel');
+    console.log(`🎯 Found ${weatherPanels.length} weather panels`);
+
+    if (weatherPanels.length === 0) {
+      console.log('🎯 No weather panels found yet, will retry later');
+      return;
+    }
+
+    weatherPanels.forEach((panel, index) => {
+      const panelEl = panel as HTMLElement;
+
+      if (showIcons) {
+        panelEl.classList.add('show-weather-icons');
+        console.log(`🎯 Added show-weather-icons class to panel ${index + 1}`);
+      } else {
+        panelEl.classList.remove('show-weather-icons');
+        console.log(`🎯 Removed show-weather-icons class from panel ${index + 1}`);
+      }
+    });
+
+    // Also directly target weather icons and set their styles
+    const weatherIcons = document.querySelectorAll('.weather-icon');
+    console.log(`🎯 Found ${weatherIcons.length} weather icons`);
+
+    weatherIcons.forEach((icon, index) => {
+      const iconEl = icon as HTMLElement;
+      if (showIcons) {
+        // Show icons by removing ALL inline styles that might be blocking visibility
+        iconEl.style.removeProperty('opacity');
+        iconEl.style.removeProperty('visibility');
+        iconEl.style.removeProperty('display');
+        iconEl.style.removeProperty('background');
+        iconEl.style.removeProperty('background-color');
+        // Force remove any remaining inline styles that might interfere
+        iconEl.style.cssText = '';
+        console.log(`🎯 Completely cleared all inline styles from icon ${index + 1}, letting CSS show it`);
+
+        // Debug: Check what CSS classes and computed styles are applied
+        const computedStyle = window.getComputedStyle(iconEl);
+        console.log(`🎯 Icon ${index + 1} debug info:`, {
+          element: iconEl,
+          classes: iconEl.className,
+          computedOpacity: computedStyle.opacity,
+          computedVisibility: computedStyle.visibility,
+          computedDisplay: computedStyle.display,
+          parentClasses: iconEl.parentElement?.className
+        });
+      } else {
+        // Hide icons with multiple methods
+        iconEl.style.opacity = '0';
+        iconEl.style.visibility = 'hidden';
+        iconEl.style.display = 'none';
+        console.log(`🎯 Set icon ${index + 1} to hidden with multiple methods`);
+      }
+    });
+
+    // Store the preference in localStorage for persistence (only when showing icons)
+    if (showIcons) {
+      localStorage.setItem('weatherIconsVisible', 'true');
+      console.log(`🎯 Saved icon visibility preference: visible`);
+    } else {
+      // When hiding icons, remove the preference so they stay hidden on refresh
+      localStorage.removeItem('weatherIconsVisible');
+      console.log(`🎯 Removed icon visibility preference - icons will stay hidden on refresh`);
+    }
+  };
+
+  // Apply customization changes
   const applyCustomization = (customization: GUICustomization) => {
     console.log('🎨 Applying customization:', customization);
-    console.log('🎨 Customization changes:', customization.changes);
     
-    customization.changes.forEach((change, index) => {
-      console.log(`🎨 Processing change ${index + 1}:`, change);
+    customization.changes.forEach(change => {
+      const { targetElement, property, value } = change;
       
-      try {
-        // Handle sorting changes first
-        if (change.targetElement === 'cities' && change.property === 'sortBy') {
-          console.log(`📊 Applying city sorting change: ${change.value}`);
-          applyCitySorting(change.value);
-          return; // Skip DOM manipulation for sorting
-        }
-        
-        if (change.targetElement === 'body') {
-          // Apply to body element
-          console.log(`🎨 Targeting body element with ${change.property}: ${change.value}`);
-          document.body.style.setProperty(change.property, change.value, 'important');
-          console.log(`✅ Applied ${change.property}: ${change.value} to body`);
-          console.log(`✅ Body style now:`, document.body.style.getPropertyValue(change.property));
+      if (property === 'showIcons') {
+        // Handle icon visibility
+        applyIconVisibility(value === 'true');
+      } else if (property === 'backgroundColor') {
+        // Handle background color changes
+        if (value === 'reset') {
+          document.body.style.backgroundColor = '';
         } else {
-          // Apply to specific CSS selectors
-          console.log(`🎨 Targeting selector: ${change.targetElement}`);
-          const elements = document.querySelectorAll(change.targetElement);
-          console.log(`🎨 Found ${elements.length} elements for selector: ${change.targetElement}`);
-          
-          if (elements.length > 0) {
-            elements.forEach((element, i) => {
-              console.log(`🎨 Applying to element ${i + 1}:`, element);
-              
-              // Remove conflicting Tailwind background classes
-              if (change.property === 'backgroundColor') {
-                const elementEl = element as HTMLElement;
-                
-                if (change.value === 'reset') {
-                  // Reset to original state
-                  elementEl.style.removeProperty('background-color');
-                  elementEl.classList.add('bg-gray-100');
-                  console.log(`🔄 Reset background to original state`);
-                } else {
-                  // Apply custom color
-                  elementEl.classList.remove('bg-gray-100', 'bg-white', 'bg-blue-100', 'bg-red-100', 'bg-green-100');
-                  console.log(`🎨 Removed conflicting Tailwind background classes`);
-                  
-                  // Try multiple approaches to ensure the color is applied
-                  elementEl.style.setProperty('background-color', change.value, 'important');
-                  elementEl.style.setProperty('background', change.value, 'important');
-                  console.log(`✅ Applied background-color: ${change.value} to element ${i + 1}`);
-                  console.log(`✅ Applied background: ${change.value} to element ${i + 1}`);
-                  
-                  // Also try setting body background as fallback
-                  document.body.style.setProperty('background-color', change.value, 'important');
-                  console.log(`✅ Applied background-color: ${change.value} to body as fallback`);
-                  
-                  // Debug: Check what CSS was actually applied
-                  console.log(`🔍 Element style after application:`, elementEl.style.cssText);
-                  console.log(`🔍 Computed backgroundColor:`, window.getComputedStyle(elementEl).backgroundColor);
-                  console.log(`🔍 Computed background:`, window.getComputedStyle(elementEl).background);
-                  console.log(`🔍 Body computed backgroundColor:`, window.getComputedStyle(document.body).backgroundColor);
-                  
-                  // Add visual feedback - temporary highlight
-                  elementEl.style.transition = 'background-color 0.3s ease';
-                  elementEl.style.boxShadow = '0 0 20px rgba(59, 130, 246, 0.5)';
-                  setTimeout(() => {
-                    elementEl.style.boxShadow = '';
-                  }, 1000);
-                  console.log(`🎨 Added visual feedback effect`);
-                }
-              } else {
-                // Handle other properties normally
-                (element as HTMLElement).style.setProperty(change.property, change.value, 'important');
-                console.log(`✅ Applied ${change.property}: ${change.value} to element ${i + 1}`);
-              }
-            });
-          } else {
-            console.warn(`⚠️ No elements found for selector: ${change.targetElement}`);
-          }
+          document.body.style.backgroundColor = value;
         }
-      } catch (err) {
-        console.error(`❌ Failed to apply ${change.property}: ${change.value}`, err);
+      } else if (property === 'color') {
+        // Handle text color changes
+        const panels = document.querySelectorAll(targetElement);
+        panels.forEach(panel => {
+          const panelEl = panel as HTMLElement;
+          if (value === 'reset') {
+            panelEl.style.color = '';
+          } else {
+            panelEl.style.color = value;
+          }
+        });
+      } else if (property === 'sortBy') {
+        // Handle city sorting
+        applyCitySorting(value);
       }
     });
   };
 
-  // Reset background to original state
-  const resetBackground = () => {
-    const mainElement = document.getElementById('weather-app-main');
-    if (mainElement) {
-      mainElement.style.removeProperty('background-color');
-      mainElement.classList.add('bg-gray-100');
-      console.log('🎨 Reset background to original state');
-    }
-  };
-
-  // Handle customizations from AI chat
-  const handleCustomization = (customizations: GUICustomization[]) => {
-    console.log('🎨 Received customizations:', customizations);
-    console.log('🎨 Number of customizations:', customizations.length);
+  // Apply city sorting
+  const applyCitySorting = (sortType: string) => {
+    console.log('📊 Applying city sorting:', sortType);
     
-    if (customizations && customizations.length > 0) {
-      console.log('🎨 Processing customizations...');
-      
-      // Apply each customization
-      customizations.forEach((customization, index) => {
-        console.log(`🎨 Processing customization ${index + 1}:`, customization);
-        applyCustomization(customization);
+    const citiesContainer = document.querySelector('.cities-container');
+    if (!citiesContainer) {
+      console.log('📊 Cities container not found');
+      return;
+    }
+
+    const cityPanels = Array.from(citiesContainer.querySelectorAll('.weather-panel'));
+    
+    if (sortType === 'temperature') {
+      // Sort by temperature (coldest first)
+      cityPanels.sort((a, b) => {
+        const tempA = parseFloat(a.querySelector('.temperature')?.textContent || '0');
+        const tempB = parseFloat(b.querySelector('.temperature')?.textContent || '0');
+        return tempA - tempB;
       });
-      
-      // Store applied customizations for potential undo functionality
-      setAppliedCustomizations(prev => [...prev, ...customizations]);
-      
-      console.log('✅ All customizations applied successfully');
-    } else {
-      console.warn('⚠️ No customizations received or empty array');
+    } else if (sortType === 'population') {
+      // Sort by population (smallest first)
+      cityPanels.sort((a, b) => {
+        const popA = parseInt(a.querySelector('.population')?.textContent?.replace(/\D/g, '') || '0');
+        const popB = parseInt(b.querySelector('.population')?.textContent?.replace(/\D/g, '') || '0');
+        return popA - popB;
+      });
+    } else if (sortType === 'alphabetical') {
+      // Sort alphabetically
+      cityPanels.sort((a, b) => {
+        const nameA = a.querySelector('h2')?.textContent || '';
+        const nameB = b.querySelector('h2')?.textContent || '';
+        return nameA.localeCompare(nameB);
+      });
     }
-  };
 
-  const loadDefaultCities = async () => {
-    try {
-      console.log('Loading default cities...');
-      setIsLoading(true);
-      const data = await weatherService.getWeatherForCities(DEFAULT_CITIES);
-      console.log('Received weather data:', data);
-      setWeatherData(data);
-      // Sort cities by population after loading weather data
-      sortCitiesByPopulation(Object.keys(data), data);
-    } catch (err) {
-      console.error('Failed to load default cities:', err);
-      setError('Failed to load default cities');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const sortCitiesByPopulation = (cityList: string[], data: Record<string, WeatherData>) => {
-    const sortedCities = [...cityList].sort((a, b) => {
-      const popA = data[a]?.location?.population || 0;
-      const popB = data[b]?.location?.population || 0;
-      return popB - popA; // Sort in descending order
+    // Re-append sorted panels
+    cityPanels.forEach(panel => {
+      citiesContainer.appendChild(panel);
     });
-    setCities(sortedCities);
   };
 
-  // Apply different sorting methods based on AI chat commands
-  const applyCitySorting = (sortMethod: string) => {
-    console.log(`📊 Applying city sorting method: ${sortMethod}`);
-    
-    const cityList = Object.keys(weatherData);
-    let sortedCities: string[] = [];
-    
-    switch (sortMethod) {
-      case 'temperature':
-        // Sort by current temperature (using first day's max temp)
-        sortedCities = [...cityList].sort((a, b) => {
-          const tempA = weatherData[a]?.daily?.temperature_2m_max?.[0] || 0;
-          const tempB = weatherData[b]?.daily?.temperature_2m_max?.[0] || 0;
-          return tempB - tempA; // Sort in descending order (hottest first)
-        });
-        break;
-        
-      case 'alphabetical':
-        // Sort alphabetically A-Z
-        sortedCities = [...cityList].sort((a, b) => a.localeCompare(b));
-        break;
-        
-      case 'population':
-      default:
-        // Default: sort by population (descending)
-        sortedCities = [...cityList].sort((a, b) => {
-          const popA = weatherData[a]?.location?.population || 0;
-          const popB = weatherData[b]?.location?.population || 0;
-          return popB - popA;
-        });
-        break;
-    }
-    
-    console.log(`📊 Cities before sorting:`, cityList);
-    console.log(`📊 Cities after sorting (${sortMethod}):`, sortedCities);
-    setCities(sortedCities);
+  // Reset background
+  const resetBackground = () => {
+    document.body.style.backgroundColor = '';
+    applyIconVisibility(false);
+    localStorage.removeItem('weatherIconsVisible');
   };
 
-  const handleAddCity = async () => {
-    if (searchInput.trim()) {
-      const newCity = searchInput.trim();
+  // Load weather data for demo cities
+  useEffect(() => {
+    const demoCities = ['London', 'Paris', 'New York', 'Tokyo', 'Sydney'];
+    
+    demoCities.forEach(city => {
+      // Simulate weather data for demo
+      const mockData: WeatherData = {
+        current: {
+          temperature: Math.floor(Math.random() * 30) + 5,
+          weathercode: Math.floor(Math.random() * 3) + 1,
+          time: new Date().toISOString()
+        },
+        daily: {
+          time: Array.from({length: 7}, (_, i) => {
+            const date = new Date();
+            date.setDate(date.getDate() + i);
+            return date.toISOString().split('T')[0];
+          }),
+          weathercode: Array.from({length: 7}, () => Math.floor(Math.random() * 3) + 1),
+          temperature_2m_max: Array.from({length: 7}, () => Math.floor(Math.random() * 30) + 5),
+          temperature_2m_min: Array.from({length: 7}, () => Math.floor(Math.random() * 20) + 2)
+        },
+        location: {
+          name: city,
+          country: 'Demo Country',
+          population: Math.floor(Math.random() * 10000000) + 100000
+        }
+      };
       
-      // Check for duplicate cities (case-insensitive)
-      if (cities.some(city => city.toLowerCase() === newCity.toLowerCase())) {
-        setError(`${newCity} is already in your forecast list`);
-        return;
-      }
+      setWeatherData(prev => ({ ...prev, [city]: mockData }));
+    });
+  }, []);
 
-      try {
-        setIsLoading(true);
-        const data = await weatherService.getWeatherForCity(newCity);
-        const updatedWeatherData = {
-          ...weatherData,
-          [newCity]: data
-        };
-        setWeatherData(updatedWeatherData);
-        // Sort all cities including the new one
-        sortCitiesByPopulation([...cities, newCity], updatedWeatherData);
-        setSearchInput('');
-        setError(null);
-      } catch (err) {
-        setError(`Failed to load weather data for ${newCity}`);
-        console.error(err);
-      } finally {
-        setIsLoading(false);
-      }
+  // Initial setup for icon visibility
+  useEffect(() => {
+    if (Object.keys(weatherData).length === 0) {
+      console.log('🎯 No weather data yet, skipping icon visibility setup');
+      return;
     }
-  };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      handleAddCity();
+    console.log('🎯 Weather data loaded, setting up icon visibility...');
+
+    // Force hide all weather icons immediately on page load as backup
+    const forceHideIcons = () => {
+      const weatherIcons = document.querySelectorAll('.weather-icon');
+      weatherIcons.forEach((icon) => {
+        const iconEl = icon as HTMLElement;
+        // Use minimal inline styles that won't interfere with CSS show/hide
+        iconEl.style.opacity = '0';
+        iconEl.style.visibility = 'hidden';
+        // Don't set display: none or other aggressive styles
+        console.log('🎯 Force hidden icon with minimal inline styles:', iconEl);
+      });
+      console.log('🎯 Force hidden all weather icons on page load');
+    };
+
+    // Try to hide icons immediately
+    forceHideIcons();
+    // Also try after a short delay
+    setTimeout(forceHideIcons, 100);
+    setTimeout(forceHideIcons, 500);
+
+    // Set up MutationObserver to catch any new icons added to the DOM
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === 'childList') {
+          mutation.addedNodes.forEach((node) => {
+            if (node.nodeType === Node.ELEMENT_NODE) {
+              const element = node as Element;
+              // Check if the added element is a weather icon
+              if (element.classList && element.classList.contains('weather-icon')) {
+                console.log('🎯 New weather icon detected, hiding it immediately');
+                (element as HTMLElement).style.opacity = '0';
+                (element as HTMLElement).style.visibility = 'hidden';
+                // Use minimal inline styles that won't interfere with CSS show/hide
+              }
+              // Also check for weather icons inside added elements
+              const icons = element.querySelectorAll('.weather-icon');
+              icons.forEach((icon) => {
+                console.log('🎯 Weather icon found in new element, hiding it immediately');
+                (icon as HTMLElement).style.opacity = '0';
+                (icon as HTMLElement).style.visibility = 'hidden';
+                // Use minimal inline styles that won't interfere with CSS show/hide
+              });
+            }
+          });
+        }
+      });
+    });
+
+    // Start observing
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true
+    });
+
+    console.log('🎯 MutationObserver set up to catch new weather icons');
+
+    // Cleanup
+    return () => observer.disconnect();
+  }, []); // Run only once on mount
+
+  // Separate useEffect for icon visibility to ensure DOM is ready
+  useEffect(() => {
+    if (Object.keys(weatherData).length === 0) {
+      console.log('🎯 No weather data yet, skipping icon visibility setup');
+      return;
     }
-  };
 
-  // Helper to check if geo city is already in the list (case-insensitive)
-  const isGeoCityInList = geoWeather && cities.some(city => city.toLowerCase() === geoWeather.location.name.toLowerCase());
+    console.log('🎯 Weather data loaded, setting up icon visibility...');
+
+    // Wait for weather panels to be rendered before setting icon visibility
+    const timer = setTimeout(() => {
+      console.log('🎯 Timer 1: Setting default icon state: hidden');
+      applyIconVisibility(false);
+
+      // Only restore icon visibility preference if user explicitly set it
+      const iconsVisible = localStorage.getItem('weatherIconsVisible');
+      if (iconsVisible === 'true') {
+        console.log('🎯 Restoring user icon visibility preference: visible');
+        applyIconVisibility(true);
+      }
+    }, 1500); // Wait 1.5 seconds for components to render
+
+    // If panels still aren't found, retry after another delay
+    const retryTimer = setTimeout(() => {
+      console.log('🎯 Timer 2: Retrying icon visibility setup...');
+      applyIconVisibility(false);
+
+      const iconsVisible = localStorage.getItem('weatherIconsVisible');
+      if (iconsVisible === 'true') {
+        applyIconVisibility(true);
+      }
+    }, 3000); // Retry after 3 seconds
+
+    // Final retry with longer delay
+    const finalTimer = setTimeout(() => {
+      console.log('🎯 Timer 3: Final attempt to set icon visibility...');
+      applyIconVisibility(false);
+
+      const iconsVisible = localStorage.getItem('weatherIconsVisible');
+      if (iconsVisible === 'true') {
+        applyIconVisibility(true);
+      }
+    }, 5000); // Final attempt after 5 seconds
+
+    return () => {
+      clearTimeout(timer);
+      clearTimeout(retryTimer);
+      clearTimeout(finalTimer);
+    };
+  }, [weatherData]); // Run when weather data changes (indicating components are rendered)
+
+  // Handle new customizations from chat
+  const handleNewCustomizations = (newCustomizations: GUICustomization[]) => {
+    console.log('🎨 Received new customizations:', newCustomizations);
+    
+    newCustomizations.forEach(customization => {
+      applyCustomization(customization);
+      setCustomizations(prev => [...prev, customization]);
+    });
+  };
 
   return (
-    <div id="weather-app-main" className="min-h-screen bg-gray-100 py-8">
-      <div className="container mx-auto px-4 max-w-4xl">
-        <h1 className="text-3xl font-bold mb-6 bg-gradient-to-r from-green-400 via-pink-500 to-blue-500 animate-gradient text-transparent bg-clip-text">Global Weather Forecast</h1>
-        
-        <div className="flex gap-2 mb-6">
-          <input
-            type="text"
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder="Enter city name"
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <button
-            onClick={handleAddCity}
-            disabled={isLoading}
-            className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-blue-300 transition-colors duration-200"
-          >
-            {isLoading ? 'Loading...' : 'Add City'}
-          </button>
-        </div>
-
-        {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-            {error}
-          </div>
-        )}
-        {geoError && (
-          <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-4">
-            {geoError}
-          </div>
-        )}
-
-        <div className="space-y-4">
-          {/* My Location card, if available and not duplicated */}
-          {geoWeather && !isGeoCityInList && (
-            <div className="relative">
-              <div className="absolute left-2 top-2 text-blue-500 text-xl" title="My Location">📍</div>
-              <WeatherPanel
-                key="geo-location"
-                cityName={`My Location (${geoWeather.location.name})`}
-                data={geoWeather}
-              />
-            </div>
-          )}
-          {/* Render other cities */}
-          {cities.map((city) => {
-            console.log(`Rendering city: ${city}, has data:`, !!weatherData[city]);
-            return weatherData[city] ? (
-              <WeatherPanel
-                key={city}
-                cityName={city}
-                data={weatherData[city]}
-              />
-            ) : (
-              <div key={city} className="p-4 bg-white rounded-lg shadow-sm animate-pulse">
-                <div className="h-6 bg-gray-200 rounded w-1/3"></div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
+    <div className="App">
+      <header className="App-header">
+        <h1>Weather App</h1>
+        <button onClick={resetBackground} className="reset-btn">
+          Reset All
+        </button>
+      </header>
       
-      {/* AI Chat Interface */}
-      <ChatToggle isOpen={isChatOpen} onToggle={() => setIsChatOpen(!isChatOpen)} />
-      <ChatPanel 
+      <main className="weather-app-main">
+        <div className="cities-container">
+          {Object.entries(weatherData).map(([cityName, data]) => (
+            <WeatherPanel
+              key={cityName}
+              cityName={cityName}
+              data={data}
+            />
+          ))}
+        </div>
+      </main>
+
+      <ChatToggle 
         isOpen={isChatOpen} 
-        onToggle={() => setIsChatOpen(false)}
-        onCustomization={handleCustomization}
-        onReset={resetBackground}
+        onToggle={() => setIsChatOpen(!isChatOpen)} 
       />
+      
+      {isChatOpen && (
+        <ChatPanel 
+          onCustomizations={handleNewCustomizations}
+          customizations={customizations}
+        />
+      )}
     </div>
   );
 }
