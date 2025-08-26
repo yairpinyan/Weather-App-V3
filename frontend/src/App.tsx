@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import WeatherPanel from './components/WeatherPanel';
 import ChatToggle from './components/ChatToggle';
 import ChatPanel from './components/ChatPanel';
-import { WeatherData } from './types/weather';
-import { GUICustomization } from './types/chat';
+import { WeatherData, GUICustomization } from './types/weather';
 import './App.css';
 
 function App() {
@@ -86,32 +85,79 @@ function App() {
   const applyCustomization = (customization: GUICustomization) => {
     console.log('🎨 Applying customization:', customization);
     
-    customization.changes.forEach(change => {
+    customization.changes.forEach((change: any) => {
       const { targetElement, property, value } = change;
+      console.log(`🎨 Processing change: ${property} = ${value} for ${targetElement}`);
       
       if (property === 'showIcons') {
         // Handle icon visibility
+        console.log('🎯 Applying icon visibility change');
         applyIconVisibility(value === 'true');
       } else if (property === 'backgroundColor') {
         // Handle background color changes
+        console.log(`🎨 Applying background color: ${value}`);
+        
         if (value === 'reset') {
-          document.body.style.backgroundColor = '';
+          console.log('🔄 Resetting background color');
+          // Reset multiple elements
+          document.body.style.removeProperty('background-color');
+          document.body.style.removeProperty('background');
+          document.documentElement.style.removeProperty('background-color');
+          document.documentElement.style.removeProperty('background');
+          // Also remove any Tailwind classes that might interfere
+          document.body.classList.remove('bg-blue-500', 'bg-green-500', 'bg-white', 'bg-gray-100');
+          document.documentElement.classList.remove('bg-blue-500', 'bg-green-500', 'bg-white', 'bg-gray-100');
         } else {
-          document.body.style.backgroundColor = value;
+          console.log(`🎨 Setting background color to: ${value}`);
+          
+          // Apply to multiple elements to ensure visibility
+          const elements = [document.body, document.documentElement];
+          
+          elements.forEach((element, index) => {
+            console.log(`🎨 Applying to element ${index + 1}:`, element);
+            
+            // Use multiple methods to ensure the color is applied
+            element.style.setProperty('background-color', value, 'important');
+            element.style.setProperty('background', value, 'important');
+            
+            // Also set as a CSS custom property
+            element.style.setProperty('--custom-bg-color', value, 'important');
+            
+            // Force a repaint
+            element.style.display = 'none';
+            element.offsetHeight; // Trigger reflow
+            element.style.display = '';
+            
+            console.log(`🎨 Element ${index + 1} style after:`, element.style.cssText);
+          });
+          
+          // Debug: Check what was actually applied
+          const computedStyle = window.getComputedStyle(document.body);
+          console.log(`🎨 Computed background-color: ${computedStyle.backgroundColor}`);
+          console.log(`🎨 Computed background: ${computedStyle.background}`);
+          console.log(`🎨 Body element:`, document.body);
+          console.log(`🎨 Body style:`, document.body.style.cssText);
+          
+          // Also check html element
+          const htmlComputedStyle = window.getComputedStyle(document.documentElement);
+          console.log(`🎨 HTML computed background-color: ${htmlComputedStyle.backgroundColor}`);
+          console.log(`🎨 HTML computed background: ${htmlComputedStyle.background}`);
         }
       } else if (property === 'color') {
         // Handle text color changes
+        console.log(`🎨 Applying text color: ${value}`);
         const panels = document.querySelectorAll(targetElement);
         panels.forEach(panel => {
           const panelEl = panel as HTMLElement;
           if (value === 'reset') {
-            panelEl.style.color = '';
+            panelEl.style.removeProperty('color');
           } else {
-            panelEl.style.color = value;
+            panelEl.style.setProperty('color', value, 'important');
           }
         });
       } else if (property === 'sortBy') {
         // Handle city sorting
+        console.log(`📊 Applying city sorting: ${value}`);
         applyCitySorting(value);
       }
     });
@@ -172,11 +218,6 @@ function App() {
     demoCities.forEach(city => {
       // Simulate weather data for demo
       const mockData: WeatherData = {
-        current: {
-          temperature: Math.floor(Math.random() * 30) + 5,
-          weathercode: Math.floor(Math.random() * 3) + 1,
-          time: new Date().toISOString()
-        },
         daily: {
           time: Array.from({length: 7}, (_, i) => {
             const date = new Date();
@@ -185,11 +226,11 @@ function App() {
           }),
           weathercode: Array.from({length: 7}, () => Math.floor(Math.random() * 3) + 1),
           temperature_2m_max: Array.from({length: 7}, () => Math.floor(Math.random() * 30) + 5),
-          temperature_2m_min: Array.from({length: 7}, () => Math.floor(Math.random() * 20) + 2)
+          temperature_2m_min: Array.from({length: 7}, () => Math.floor(Math.random() * 20) + 2),
+          precipitation_sum: Array.from({length: 7}, () => Math.random() * 10)
         },
         location: {
           name: city,
-          country: 'Demo Country',
           population: Math.floor(Math.random() * 10000000) + 100000
         }
       };

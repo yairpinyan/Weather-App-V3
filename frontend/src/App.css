@@ -4,6 +4,48 @@
   background-color: #f3f4f6;
 }
 
+/* Ensure background color changes can override default styles */
+body {
+  transition: background-color 0.3s ease, background 0.3s ease;
+}
+
+/* High specificity rules for background colors */
+body[style*="background-color"] {
+  background-color: inherit !important;
+}
+
+body[style*="background"] {
+  background: inherit !important;
+}
+
+/* Force background colors to be visible */
+body[style*="background-color: #3b82f6"],
+body[style*="background-color: rgb(59, 130, 246)"] {
+  background-color: #3b82f6 !important;
+  background: #3b82f6 !important;
+}
+
+body[style*="background-color: #10b981"],
+body[style*="background-color: rgb(16, 185, 129)"] {
+  background-color: #10b981 !important;
+  background: #10b981 !important;
+}
+
+body[style*="background-color: #ffffff"],
+body[style*="background-color: rgb(255, 255, 255)"] {
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+}
+
+/* Override any Tailwind background classes */
+body.bg-gray-100,
+body.bg-white,
+body.bg-blue-500,
+body.bg-green-500 {
+  background-color: inherit !important;
+  background: inherit !important;
+}
+
 .App-header {
   background-color: #1f2937;
   padding: 1rem;

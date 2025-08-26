@@ -45,10 +45,10 @@ const WeatherPanel: React.FC<WeatherPanelProps> = ({ cityName, data }) => {
 
       <div className="mt-4">
         <div className="text-3xl font-bold text-gray-900">
-          {data.current.temperature}°C
+          {data.daily.temperature_2m_max[0]}°C
         </div>
         <div className="text-gray-600 mt-1">
-          {new Date(data.current.time).toLocaleDateString()}
+          {new Date(data.daily.time[0]).toLocaleDateString()}
         </div>
       </div>
 
