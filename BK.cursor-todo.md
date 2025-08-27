@@ -49,6 +49,33 @@
 
 **CRITICAL:** Both services must be running before proceeding with any other tasks
 
+### Rule 2: Architecture Documentation Updates
+**ON EVERY TASK COMPLETION, I MUST:**
+
+1. **Update Implementation Status**: Modify the "Current Implementation Status" section in `weather-app-architecture.md`
+2. **Update Component Diagrams**: If new components or features are added, update the relevant Mermaid diagrams
+3. **Update Technology Stack**: If new technologies are introduced, update the technology stack diagram
+4. **Update Data Flow**: If new data flows are created, update the sequence diagrams
+5. **Document New Features**: Add completed features to the "✅ Completed Features" list
+6. **Update Progress**: Move items from "🔄 In Progress" to "✅ Completed Features" as appropriate
+
+**Architecture Update Triggers:**
+- ✅ Any feature completion
+- ✅ New component creation
+- ✅ API endpoint changes
+- ✅ Technology stack updates
+- ✅ Data flow modifications
+- ✅ Security or performance improvements
+
+**Update Format:**
+```markdown
+### ✅ Completed Features
+- **Feature Name**: Brief description of what was implemented
+- **Date**: YYYY-MM-DD
+- **Components**: List of affected components
+- **APIs**: List of affected endpoints
+```
+
 **POWERSHELL NOTES:**
 - Don't use `&&` syntax (not supported in PowerShell)
 - Always run commands from correct directory
