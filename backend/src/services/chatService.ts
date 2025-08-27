@@ -102,7 +102,7 @@ export const processChatMessage = async (
         changes: [{
           targetElement: 'body',
           property: 'backgroundColor',
-          value: '#ffffff',
+          value: 'reset',
           previousValue: 'current'
         }]
       });

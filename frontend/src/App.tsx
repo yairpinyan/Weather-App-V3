@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import WeatherPanel from './components/WeatherPanel';
 import ChatToggle from './components/ChatToggle';
 import ChatPanel from './components/ChatPanel';
@@ -99,14 +99,39 @@ function App() {
         
         if (value === 'reset') {
           console.log('🔄 Resetting background color');
+          
           // Reset multiple elements
           document.body.style.removeProperty('background-color');
           document.body.style.removeProperty('background');
           document.documentElement.style.removeProperty('background-color');
           document.documentElement.style.removeProperty('background');
+          
+          // Also reset the app element
+          const appElement = document.getElementById('app');
+          if (appElement) {
+            appElement.style.removeProperty('background-color');
+            appElement.style.removeProperty('background');
+            appElement.style.removeProperty('min-height');
+            console.log('🔄 Reset app element styles');
+          }
+          
+          // Remove injected CSS
+          const styleElement = document.getElementById('custom-bg-style');
+          if (styleElement) {
+            styleElement.remove();
+            console.log('🔄 Removed injected CSS');
+          }
+          
           // Also remove any Tailwind classes that might interfere
           document.body.classList.remove('bg-blue-500', 'bg-green-500', 'bg-white', 'bg-gray-100');
           document.documentElement.classList.remove('bg-blue-500', 'bg-green-500', 'bg-white', 'bg-gray-100');
+          
+          // Force a repaint to ensure the reset is visible
+          document.body.style.display = 'none';
+          document.body.offsetHeight; // Trigger reflow
+          document.body.style.display = '';
+          
+          console.log('🔄 Background reset complete');
         } else {
           console.log(`🎨 Setting background color to: ${value}`);
           
@@ -131,6 +156,51 @@ function App() {
             console.log(`🎨 Element ${index + 1} style after:`, element.style.cssText);
           });
           
+          // Also apply to the root app div
+          const appElement = document.getElementById('app');
+          if (appElement) {
+            console.log('🎨 Applying to app element:', appElement);
+            appElement.style.setProperty('background-color', value, 'important');
+            appElement.style.setProperty('background', value, 'important');
+            appElement.style.setProperty('min-height', '100vh', 'important');
+            console.log('🎨 App element style after:', appElement.style.cssText);
+          }
+          
+          // Try a different approach - inject CSS directly
+          let styleElement = document.getElementById('custom-bg-style');
+          if (!styleElement) {
+            styleElement = document.createElement('style');
+            styleElement.id = 'custom-bg-style';
+            document.head.appendChild(styleElement);
+          }
+          
+          styleElement.textContent = `
+            html, body, #app, .App {
+              background-color: ${value} !important;
+              background: ${value} !important;
+            }
+            
+            /* Make sure no other elements are covering the background */
+            .App {
+              background-color: ${value} !important;
+              background: ${value} !important;
+              min-height: 100vh !important;
+            }
+            
+            /* Override any potential covering elements */
+            .weather-app-main {
+              background-color: transparent !important;
+              background: transparent !important;
+            }
+            
+            .cities-container {
+              background-color: transparent !important;
+              background: transparent !important;
+            }
+          `;
+          
+          console.log('🎨 Injected CSS:', styleElement.textContent);
+          
           // Debug: Check what was actually applied
           const computedStyle = window.getComputedStyle(document.body);
           console.log(`🎨 Computed background-color: ${computedStyle.backgroundColor}`);
@@ -142,6 +212,34 @@ function App() {
           const htmlComputedStyle = window.getComputedStyle(document.documentElement);
           console.log(`🎨 HTML computed background-color: ${htmlComputedStyle.backgroundColor}`);
           console.log(`🎨 HTML computed background: ${htmlComputedStyle.background}`);
+          
+          // Check the App element
+          const appElementCheck = document.querySelector('.App');
+          if (appElementCheck) {
+            const appComputedStyle = window.getComputedStyle(appElementCheck);
+            console.log(`🎨 App computed background-color: ${appComputedStyle.backgroundColor}`);
+            console.log(`🎨 App computed background: ${appComputedStyle.background}`);
+            console.log(`🎨 App element:`, appElementCheck);
+          }
+          
+          // Check if there are any covering elements
+          const coveringElements = document.querySelectorAll('*');
+          console.log(`🎨 Total elements on page: ${coveringElements.length}`);
+          
+          // Check for elements with background colors that might be covering
+          const elementsWithBg = Array.from(coveringElements).filter(el => {
+            const style = window.getComputedStyle(el);
+            return style.backgroundColor !== 'rgba(0, 0, 0, 0)' && 
+                   style.backgroundColor !== 'transparent' &&
+                   style.backgroundColor !== 'rgb(59, 130, 246)';
+          });
+          
+          console.log(`🎨 Elements with different background colors:`, elementsWithBg.map(el => ({
+            element: el,
+            tagName: el.tagName,
+            className: el.className,
+            backgroundColor: window.getComputedStyle(el).backgroundColor
+          })));
         }
       } else if (property === 'color') {
         // Handle text color changes
@@ -174,34 +272,53 @@ function App() {
     }
 
     const cityPanels = Array.from(citiesContainer.querySelectorAll('.weather-panel'));
+    console.log(`📊 Found ${cityPanels.length} city panels to sort`);
     
     if (sortType === 'temperature') {
       // Sort by temperature (coldest first)
       cityPanels.sort((a, b) => {
-        const tempA = parseFloat(a.querySelector('.temperature')?.textContent || '0');
-        const tempB = parseFloat(b.querySelector('.temperature')?.textContent || '0');
+        // Look for the temperature in the div with text-3xl class
+        const tempElementA = a.querySelector('.text-3xl.font-bold.text-gray-900');
+        const tempElementB = b.querySelector('.text-3xl.font-bold.text-gray-900');
+        
+        const tempA = parseFloat(tempElementA?.textContent?.replace('°C', '') || '0');
+        const tempB = parseFloat(tempElementB?.textContent?.replace('°C', '') || '0');
+        
+        console.log(`📊 Temperature A: ${tempA}, Temperature B: ${tempB}`);
         return tempA - tempB;
       });
     } else if (sortType === 'population') {
       // Sort by population (smallest first)
       cityPanels.sort((a, b) => {
-        const popA = parseInt(a.querySelector('.population')?.textContent?.replace(/\D/g, '') || '0');
-        const popB = parseInt(b.querySelector('.population')?.textContent?.replace(/\D/g, '') || '0');
+        // Look for population in the span with text-gray-600 class
+        const popElementA = a.querySelector('.text-gray-600.text-base.ml-2');
+        const popElementB = b.querySelector('.text-gray-600.text-base.ml-2');
+        
+        const popA = parseInt(popElementA?.textContent?.replace(/[^\d]/g, '') || '0');
+        const popB = parseInt(popElementB?.textContent?.replace(/[^\d]/g, '') || '0');
+        
+        console.log(`📊 Population A: ${popA}, Population B: ${popB}`);
         return popA - popB;
       });
     } else if (sortType === 'alphabetical') {
       // Sort alphabetically
       cityPanels.sort((a, b) => {
-        const nameA = a.querySelector('h2')?.textContent || '';
-        const nameB = b.querySelector('h2')?.textContent || '';
+        const nameA = a.querySelector('h2')?.textContent?.split('(')[0].trim() || '';
+        const nameB = b.querySelector('h2')?.textContent?.split('(')[0].trim() || '';
+        
+        console.log(`📊 Name A: ${nameA}, Name B: ${nameB}`);
         return nameA.localeCompare(nameB);
       });
     }
 
+    console.log('📊 Re-appending sorted panels...');
     // Re-append sorted panels
-    cityPanels.forEach(panel => {
+    cityPanels.forEach((panel, index) => {
+      console.log(`📊 Appending panel ${index + 1}:`, panel.querySelector('h2')?.textContent);
       citiesContainer.appendChild(panel);
     });
+    
+    console.log('📊 City sorting complete');
   };
 
   // Reset background
@@ -375,13 +492,13 @@ function App() {
         <h1>Weather App</h1>
         <button onClick={resetBackground} className="reset-btn">
           Reset All
-        </button>
+          </button>
       </header>
       
       <main className="weather-app-main">
         <div className="cities-container">
           {Object.entries(weatherData).map(([cityName, data]) => (
-            <WeatherPanel
+              <WeatherPanel
               key={cityName}
               cityName={cityName}
               data={data}
@@ -389,7 +506,7 @@ function App() {
           ))}
         </div>
       </main>
-
+      
       <ChatToggle 
         isOpen={isChatOpen} 
         onToggle={() => setIsChatOpen(!isChatOpen)} 

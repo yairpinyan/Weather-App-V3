@@ -18,21 +18,33 @@ body[style*="background"] {
   background: inherit !important;
 }
 
-/* Force background colors to be visible */
+/* Force background colors to be visible - Ultra high specificity */
+html[style*="background-color: #3b82f6"],
+html[style*="background-color: rgb(59, 130, 246)"],
 body[style*="background-color: #3b82f6"],
-body[style*="background-color: rgb(59, 130, 246)"] {
+body[style*="background-color: rgb(59, 130, 246)"],
+#app[style*="background-color: #3b82f6"],
+#app[style*="background-color: rgb(59, 130, 246)"] {
   background-color: #3b82f6 !important;
   background: #3b82f6 !important;
 }
 
+html[style*="background-color: #10b981"],
+html[style*="background-color: rgb(16, 185, 129)"],
 body[style*="background-color: #10b981"],
-body[style*="background-color: rgb(16, 185, 129)"] {
+body[style*="background-color: rgb(16, 185, 129)"],
+#app[style*="background-color: #10b981"],
+#app[style*="background-color: rgb(16, 185, 129)"] {
   background-color: #10b981 !important;
   background: #10b981 !important;
 }
 
+html[style*="background-color: #ffffff"],
+html[style*="background-color: rgb(255, 255, 255)"],
 body[style*="background-color: #ffffff"],
-body[style*="background-color: rgb(255, 255, 255)"] {
+body[style*="background-color: rgb(255, 255, 255)"],
+#app[style*="background-color: #ffffff"],
+#app[style*="background-color: rgb(255, 255, 255)"] {
   background-color: #ffffff !important;
   background: #ffffff !important;
 }
