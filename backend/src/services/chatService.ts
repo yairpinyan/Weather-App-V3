@@ -76,23 +76,41 @@ export const processChatMessage = async (
       };
     }
     
-    if (lowerMessage.includes('green')) {
-      customizations.push({
-        id: `bg-${Date.now()}`,
-        timestamp: new Date(),
-        description: `Changed background to green based on request: "${message}"`,
-        changes: [{
-          targetElement: 'body',
-          property: 'backgroundColor',
-          value: '#10b981',
-          previousValue: '#ffffff'
-        }]
-      });
-      return {
-        response: `🎨 I've changed the background to a refreshing green color!`,
-        customizations
-      };
-    }
+         if (lowerMessage.includes('green')) {
+       customizations.push({
+         id: `bg-${Date.now()}`,
+         timestamp: new Date(),
+         description: `Changed background to green based on request: "${message}"`,
+         changes: [{
+           targetElement: 'body',
+           property: 'backgroundColor',
+           value: '#10b981',
+           previousValue: '#ffffff'
+         }]
+       });
+       return {
+         response: `🎨 I've changed the background to a refreshing green color!`,
+         customizations
+       };
+     }
+     
+     if (lowerMessage.includes('red')) {
+       customizations.push({
+         id: `bg-${Date.now()}`,
+         timestamp: new Date(),
+         description: `Changed background to red based on request: "${message}"`,
+         changes: [{
+           targetElement: 'body',
+           property: 'backgroundColor',
+           value: '#ef4444',
+           previousValue: '#ffffff'
+         }]
+       });
+       return {
+         response: `🎨 I've changed the background to a vibrant red color!`,
+         customizations
+       };
+     }
 
     if (lowerMessage.includes('reset') || lowerMessage.includes('default') || lowerMessage.includes('white')) {
       customizations.push({
