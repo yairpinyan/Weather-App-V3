@@ -244,19 +244,36 @@ function App() {
       } else if (property === 'color') {
         // Handle text color changes
         console.log(`🎨 Applying text color: ${value}`);
-        const panels = document.querySelectorAll(targetElement);
-        panels.forEach(panel => {
-          const panelEl = panel as HTMLElement;
-          if (value === 'reset') {
-            panelEl.style.removeProperty('color');
-          } else {
-            panelEl.style.setProperty('color', value, 'important');
-          }
-        });
+        
+        if (value === 'reset') {
+          // Reset text colors by removing inline styles from all text elements
+          const allTextElements = document.querySelectorAll('.weather-panel, .weather-panel h2, .weather-panel .text-3xl, .weather-panel .text-gray-600, .weather-panel .text-gray-700, .weather-panel .text-gray-800, .weather-panel .text-gray-900');
+          allTextElements.forEach(element => {
+            const el = element as HTMLElement;
+            el.style.removeProperty('color');
+            console.log(`🎨 Reset color for element:`, el);
+          });
+          console.log('🎨 Text color reset complete');
+        } else {
+          // Apply text color to all text elements within weather panels
+          const allTextElements = document.querySelectorAll('.weather-panel, .weather-panel h2, .weather-panel .text-3xl, .weather-panel .text-gray-600, .weather-panel .text-gray-700, .weather-panel .text-gray-800, .weather-panel .text-gray-900');
+          allTextElements.forEach(element => {
+            const el = element as HTMLElement;
+            el.style.setProperty('color', value, 'important');
+            console.log(`🎨 Applied color ${value} to element:`, el);
+          });
+          console.log(`🎨 Applied text color ${value} to ${allTextElements.length} text elements`);
+        }
       } else if (property === 'sortBy') {
         // Handle city sorting
         console.log(`📊 Applying city sorting: ${value}`);
-        applyCitySorting(value);
+        if (value === 'reset') {
+          // Reset city order to default (original order)
+          console.log('📊 Resetting city order to default');
+          resetCityOrder();
+        } else {
+          applyCitySorting(value);
+        }
       }
     });
   };
@@ -321,11 +338,86 @@ function App() {
     console.log('📊 City sorting complete');
   };
 
-  // Reset background
-  const resetBackground = () => {
-    document.body.style.backgroundColor = '';
+  // Reset city order to default
+  const resetCityOrder = () => {
+    console.log('📊 Resetting city order to default');
+    
+    // Get the original city data in the order it was loaded
+    const originalCityOrder = Object.keys(weatherData);
+    console.log('📊 Original city order:', originalCityOrder);
+    
+    const citiesContainer = document.querySelector('.cities-container');
+    if (!citiesContainer) {
+      console.log('📊 Cities container not found for reset');
+      return;
+    }
+
+    // Get all current panels and create a map for easy lookup
+    const currentPanels = Array.from(citiesContainer.querySelectorAll('.weather-panel'));
+    const panelMap = new Map();
+    
+    currentPanels.forEach(panel => {
+      const cityName = panel.querySelector('h2')?.textContent?.split('(')[0].trim();
+      if (cityName) {
+        panelMap.set(cityName, panel);
+      }
+    });
+    
+    // Remove all current panels
+    currentPanels.forEach(panel => panel.remove());
+    
+    // Re-add panels in original order
+    originalCityOrder.forEach(cityName => {
+      const cityPanel = panelMap.get(cityName);
+      if (cityPanel) {
+        citiesContainer.appendChild(cityPanel);
+        console.log(`📊 Restored ${cityName} to original position`);
+      }
+    });
+    
+    console.log('📊 City order reset complete');
+  };
+
+  // Reset all customizations (comprehensive reset)
+  const resetAllCustomizations = () => {
+    console.log('🔄 Reset All button clicked - applying comprehensive reset');
+    
+    // Reset background color
+    document.body.style.removeProperty('background-color');
+    document.body.style.removeProperty('background');
+    document.documentElement.style.removeProperty('background-color');
+    document.documentElement.style.removeProperty('background');
+    
+    // Remove injected CSS
+    const styleElement = document.getElementById('custom-bg-style');
+    if (styleElement) {
+      styleElement.remove();
+      console.log('🔄 Removed injected CSS');
+    }
+    
+    // Reset app element
+    const appElement = document.getElementById('app');
+    if (appElement) {
+      appElement.style.removeProperty('background-color');
+      appElement.style.removeProperty('background');
+      appElement.style.removeProperty('min-height');
+    }
+    
+    // Reset text colors
+    const allTextElements = document.querySelectorAll('.weather-panel, .weather-panel h2, .weather-panel .text-3xl, .weather-panel .text-gray-600, .weather-panel .text-gray-700, .weather-panel .text-gray-800, .weather-panel .text-gray-900');
+    allTextElements.forEach(element => {
+      const el = element as HTMLElement;
+      el.style.removeProperty('color');
+    });
+    
+    // Reset icons
     applyIconVisibility(false);
     localStorage.removeItem('weatherIconsVisible');
+    
+    // Reset city order
+    resetCityOrder();
+    
+    console.log('🔄 Comprehensive reset complete');
   };
 
   // Load weather data for demo cities
@@ -490,7 +582,7 @@ function App() {
     <div className="App">
       <header className="App-header">
         <h1>Weather App</h1>
-        <button onClick={resetBackground} className="reset-btn">
+        <button onClick={resetAllCustomizations} className="reset-btn">
           Reset All
           </button>
       </header>

@@ -187,6 +187,20 @@ Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd 'G:\My Drive\M
 - [ ] **TASK-20241219-004-015**: Implement customization persistence and theme export
 - [ ] **TASK-20241219-004-016**: Add accessibility validation and WCAG compliance checks
 
+**Phase 5: Infrastructure & DevOps**
+- [x] **TASK-20241219-004-017**: Fix and enhance server startup script
+  - **Status**: Completed
+  - **Created**: 2024-12-19
+  - **Completed**: 2024-12-19
+  - **Description**: Improve server startup script to automatically check, kill, and restart both backend and frontend servers
+  - **Requirements**: 
+    - ✅ Check if backend server (port 5000) is running and kill it if so
+    - ✅ Check if frontend server (port 5173) is running and kill it if so
+    - ✅ Automatically restart both servers in sequence
+    - ✅ Rename file from "start-servers.bat" to "restart-servers.bat"
+  - **Approach**: Enhanced batch script with automatic port checking, process killing, and server restart functionality
+  - **Result**: Created `restart-servers.bat` with comprehensive server management capabilities
+
 **Current Focus**: Phase 2 - Basic Customization System
 
 **Progress Update - 2024-12-19 18:30**:
