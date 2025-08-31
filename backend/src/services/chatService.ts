@@ -273,13 +273,13 @@ export const processChatMessage = async (
         {
           targetElement: 'body',
           property: 'backgroundColor',
-          value: '#ffffff',
+          value: 'reset',
           previousValue: 'current'
         },
         {
           targetElement: '.weather-panel',
           property: 'color',
-          value: '#000000',
+          value: 'reset',
           previousValue: 'current'
         },
         {
@@ -287,11 +287,17 @@ export const processChatMessage = async (
           property: 'showIcons',
           value: 'false',
           previousValue: 'current'
+        },
+        {
+          targetElement: '.cities-container',
+          property: 'sortBy',
+          value: 'reset',
+          previousValue: 'current'
         }
       ]
     });
     return {
-      response: `🔄 I've reset all customizations! Everything is back to the default appearance.`,
+      response: `🔄 I've reset all customizations! Everything is back to the default appearance, including city order.`,
       customizations
     };
   }
