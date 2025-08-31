@@ -114,7 +114,61 @@ export const processChatMessage = async (
   }
 
   // Handle text color changes
-  if (lowerMessage.includes('text') && lowerMessage.includes('color')) {
+  if (lowerMessage.includes('text') || lowerMessage.includes('color') || lowerMessage.includes('make all text') || lowerMessage.includes('change text')) {
+    if (lowerMessage.includes('blue')) {
+      customizations.push({
+        id: `text-${Date.now()}`,
+        timestamp: new Date(),
+        description: `Changed text color to blue based on request: "${message}"`,
+        changes: [{
+          targetElement: '.weather-panel',
+          property: 'color',
+          value: '#3b82f6',
+          previousValue: '#000000'
+        }]
+      });
+      return {
+        response: `🎨 I've changed the text color to blue! All text in the weather panels should now be blue.`,
+        customizations
+      };
+    }
+    
+    if (lowerMessage.includes('red')) {
+      customizations.push({
+        id: `text-${Date.now()}`,
+        timestamp: new Date(),
+        description: `Changed text color to red based on request: "${message}"`,
+        changes: [{
+          targetElement: '.weather-panel',
+          property: 'color',
+          value: '#ef4444',
+          previousValue: '#000000'
+        }]
+      });
+      return {
+        response: `🎨 I've changed the text color to red! All text in the weather panels should now be red.`,
+        customizations
+      };
+    }
+    
+    if (lowerMessage.includes('green')) {
+      customizations.push({
+        id: `text-${Date.now()}`,
+        timestamp: new Date(),
+        description: `Changed text color to green based on request: "${message}"`,
+        changes: [{
+          targetElement: '.weather-panel',
+          property: 'color',
+          value: '#10b981',
+          previousValue: '#000000'
+        }]
+      });
+      return {
+        response: `🎨 I've changed the text color to green! All text in the weather panels should now be green.`,
+        customizations
+      };
+    }
+    
     if (lowerMessage.includes('white')) {
       customizations.push({
         id: `text-${Date.now()}`,
@@ -129,6 +183,24 @@ export const processChatMessage = async (
       });
       return {
         response: `🎨 I've changed the text color to white for better visibility!`,
+        customizations
+      };
+    }
+    
+    if (lowerMessage.includes('reset') || lowerMessage.includes('default') || lowerMessage.includes('black')) {
+      customizations.push({
+        id: `text-reset-${Date.now()}`,
+        timestamp: new Date(),
+        description: `Reset text color to default based on request: "${message}"`,
+        changes: [{
+          targetElement: '.weather-panel',
+          property: 'color',
+          value: 'reset',
+          previousValue: 'current'
+        }]
+      });
+      return {
+        response: `🎨 I've reset the text color to the default! All text should now be back to the original colors.`,
         customizations
       };
     }
