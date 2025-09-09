@@ -59,6 +59,24 @@
 5. **Document New Features**: Add completed features to the "✅ Completed Features" list
 6. **Update Progress**: Move items from "🔄 In Progress" to "✅ Completed Features" as appropriate
 
+### Rule 3: Git Commit After Task Completion
+**ON EVERY TASK COMPLETION, I MUST:**
+
+1. **Stage All Changes**: `git add .` to stage all modified files
+2. **Create Descriptive Commit**: Use clear, descriptive commit message following format:
+   ```
+   feat: [Feature Name] - [Brief Description]
+   
+   - [Specific change 1]
+   - [Specific change 2]
+   - [Technical details if relevant]
+   
+   Closes #[task-id] (if applicable)
+   ```
+3. **Verify Commit**: `git status` to confirm clean working directory
+4. **Push Changes**: `git push origin [branch-name]` to sync with remote
+5. **Update Todo**: Mark task as completed with commit hash reference
+
 **Architecture Update Triggers:**
 - ✅ Any feature completion
 - ✅ New component creation

@@ -8,13 +8,13 @@ test.describe('Weather App', () => {
 
   test('should load the main page', async ({ page }) => {
     // Check if the title is present
-    await expect(page.getByRole('heading', { name: /Global Weather Forecast/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Weather App/i })).toBeVisible();
     
-    // Check if the search input is present
-    await expect(page.getByPlaceholder('Enter city name')).toBeVisible();
+    // Check if the reset button is present
+    await expect(page.getByRole('button', { name: /Reset All/i })).toBeVisible();
     
-    // Check if the add city button is present
-    await expect(page.getByRole('button', { name: /Add City/i })).toBeVisible();
+    // Check if weather panels are present (demo cities should be loaded)
+    await expect(page.locator('.weather-panel')).toHaveCount(5); // Should have 5 demo cities
   });
 
   test('should add a new city', async ({ page }) => {

@@ -93,6 +93,26 @@ function App() {
         // Handle icon visibility
         console.log('🎯 Applying icon visibility change');
         applyIconVisibility(value === 'true');
+      } else if (property === 'iconSize') {
+        // NEW: Handle icon sizing
+        console.log(`🔍 Applying icon size change: ${value}`);
+        applyIconSize(value);
+      } else if (property === 'layout') {
+        // NEW: Handle layout changes
+        console.log(`🏗️ Applying layout change: ${value}`);
+        applyLayoutChange(value);
+      } else if (property === 'spacing') {
+        // NEW: Handle spacing adjustments
+        console.log(`📏 Applying spacing change: ${value}`);
+        applySpacingChange(value);
+      } else if (property === 'animations') {
+        // NEW: Handle animation settings
+        console.log(`✨ Applying animation setting: ${value}`);
+        applyAnimationSetting(value);
+      } else if (property === 'fadeEffect') {
+        // NEW: Handle fade effects
+        console.log(`✨ Applying fade effect: ${value}`);
+        applyFadeEffect(value);
       } else if (property === 'backgroundColor') {
         // Handle background color changes
         console.log(`🎨 Applying background color: ${value}`);
@@ -274,8 +294,212 @@ function App() {
         } else {
           applyCitySorting(value);
         }
+      } else if (property === 'layout') {
+        // Handle layout changes
+        console.log(`🏗️ Applying layout change: ${value}`);
+        applyLayoutChange(value);
       }
     });
+  };
+
+  // NEW: Apply icon size changes
+  const applyIconSize = (size: string) => {
+    console.log(`🔍 Applying icon size: ${size}`);
+    
+    const weatherIcons = document.querySelectorAll('.weather-icon');
+    console.log(`🔍 Found ${weatherIcons.length} weather icons to resize`);
+    
+    weatherIcons.forEach((icon, index) => {
+      const iconEl = icon as HTMLElement;
+      
+      if (size === 'reset') {
+        // Reset to default size
+        iconEl.style.removeProperty('width');
+        iconEl.style.removeProperty('height');
+        iconEl.style.removeProperty('font-size');
+        iconEl.style.removeProperty('transform');
+        console.log(`🔍 Reset icon ${index + 1} to default size`);
+      } else if (size === 'large') {
+        // Make icons bigger
+        iconEl.style.setProperty('width', '48px', 'important');
+        iconEl.style.setProperty('height', '48px', 'important');
+        iconEl.style.setProperty('font-size', '48px', 'important');
+        iconEl.style.setProperty('transform', 'scale(1.5)', 'important');
+        console.log(`🔍 Made icon ${index + 1} larger`);
+      } else if (size === 'small') {
+        // Make icons smaller
+        iconEl.style.setProperty('width', '16px', 'important');
+        iconEl.style.setProperty('height', '16px', 'important');
+        iconEl.style.setProperty('font-size', '16px', 'important');
+        iconEl.style.setProperty('transform', 'scale(0.75)', 'important');
+        console.log(`🔍 Made icon ${index + 1} smaller`);
+      }
+    });
+    
+    // Store the preference
+    if (size !== 'reset') {
+      localStorage.setItem('iconSize', size);
+      console.log(`🔍 Saved icon size preference: ${size}`);
+    } else {
+      localStorage.removeItem('iconSize');
+      console.log(`🔍 Removed icon size preference`);
+    }
+  };
+
+  // NEW: Apply layout changes
+  const applyLayoutChange = (layout: string) => {
+    console.log(`🏗️ Applying layout change: ${layout}`);
+    
+    const citiesContainer = document.querySelector('.cities-container');
+    if (!citiesContainer) {
+      console.log('🏗️ Cities container not found');
+      return;
+    }
+    
+    const containerEl = citiesContainer as HTMLElement;
+    
+    if (layout === 'reset') {
+      // Reset to default layout
+      containerEl.classList.remove('grid-layout', 'list-layout');
+      containerEl.style.removeProperty('display');
+      containerEl.style.removeProperty('grid-template-columns');
+      containerEl.style.removeProperty('gap');
+      console.log('🏗️ Reset layout to default');
+    } else if (layout === 'grid') {
+      // Apply grid layout
+      containerEl.classList.add('grid-layout');
+      containerEl.classList.remove('list-layout');
+      containerEl.style.setProperty('display', 'grid', 'important');
+      containerEl.style.setProperty('grid-template-columns', 'repeat(auto-fit, minmax(300px, 1fr))', 'important');
+      containerEl.style.setProperty('gap', '1.5rem', 'important');
+      console.log('🏗️ Applied grid layout');
+    } else if (layout === 'list') {
+      // Apply list layout
+      containerEl.classList.add('list-layout');
+      containerEl.classList.remove('grid-layout');
+      containerEl.style.setProperty('display', 'flex', 'important');
+      containerEl.style.setProperty('flex-direction', 'column', 'important');
+      containerEl.style.setProperty('gap', '1rem', 'important');
+      console.log('🏗️ Applied list layout');
+    }
+    
+    // Store the preference
+    if (layout !== 'reset') {
+      localStorage.setItem('layout', layout);
+      console.log(`🏗️ Saved layout preference: ${layout}`);
+    } else {
+      localStorage.removeItem('layout');
+      console.log(`🏗️ Removed layout preference`);
+    }
+  };
+
+  // NEW: Apply spacing changes
+  const applySpacingChange = (spacing: string) => {
+    console.log(`📏 Applying spacing change: ${spacing}`);
+    
+    const weatherPanels = document.querySelectorAll('.weather-panel');
+    console.log(`📏 Found ${weatherPanels.length} weather panels to adjust spacing`);
+    
+    weatherPanels.forEach((panel, index) => {
+      const panelEl = panel as HTMLElement;
+      
+      if (spacing === 'reset') {
+        // Reset to default spacing
+        panelEl.style.removeProperty('margin');
+        panelEl.style.removeProperty('padding');
+        console.log(`📏 Reset spacing for panel ${index + 1}`);
+      } else if (spacing === 'large') {
+        // Increase spacing
+        panelEl.style.setProperty('margin', '1.5rem 0', 'important');
+        panelEl.style.setProperty('padding', '2rem', 'important');
+        console.log(`📏 Increased spacing for panel ${index + 1}`);
+      } else if (spacing === 'small') {
+        // Decrease spacing
+        panelEl.style.setProperty('margin', '0.25rem 0', 'important');
+        panelEl.style.setProperty('padding', '0.75rem', 'important');
+        console.log(`📏 Decreased spacing for panel ${index + 1}`);
+      }
+    });
+    
+    // Store the preference
+    if (spacing !== 'reset') {
+      localStorage.setItem('spacing', spacing);
+      console.log(`📏 Saved spacing preference: ${spacing}`);
+    } else {
+      localStorage.removeItem('spacing');
+      console.log(`📏 Removed spacing preference`);
+    }
+  };
+
+  // NEW: Apply animation settings
+  const applyAnimationSetting = (setting: string) => {
+    console.log(`✨ Applying animation setting: ${setting}`);
+    
+    const weatherPanels = document.querySelectorAll('.weather-panel');
+    console.log(`✨ Found ${weatherPanels.length} weather panels to adjust animations`);
+    
+    weatherPanels.forEach((panel, index) => {
+      const panelEl = panel as HTMLElement;
+      
+      if (setting === 'reset') {
+        // Reset to default animations
+        panelEl.style.removeProperty('transition');
+        panelEl.style.removeProperty('animation');
+        console.log(`✨ Reset animations for panel ${index + 1}`);
+      } else if (setting === 'enabled') {
+        // Enable smooth animations
+        panelEl.style.setProperty('transition', 'all 0.3s ease-in-out', 'important');
+        panelEl.style.setProperty('animation', 'fadeIn 0.5s ease-in', 'important');
+        console.log(`✨ Enabled animations for panel ${index + 1}`);
+      } else if (setting === 'disabled') {
+        // Disable animations
+        panelEl.style.setProperty('transition', 'none', 'important');
+        panelEl.style.setProperty('animation', 'none', 'important');
+        console.log(`✨ Disabled animations for panel ${index + 1}`);
+      }
+    });
+    
+    // Store the preference
+    if (setting !== 'reset') {
+      localStorage.setItem('animations', setting);
+      console.log(`✨ Saved animation preference: ${setting}`);
+    } else {
+      localStorage.removeItem('animations');
+      console.log(`✨ Removed animation preference`);
+    }
+  };
+
+  // NEW: Apply fade effects
+  const applyFadeEffect = (effect: string) => {
+    console.log(`✨ Applying fade effect: ${effect}`);
+    
+    const weatherPanels = document.querySelectorAll('.weather-panel');
+    console.log(`✨ Found ${weatherPanels.length} weather panels to adjust fade effects`);
+    
+    weatherPanels.forEach((panel, index) => {
+      const panelEl = panel as HTMLElement;
+      
+      if (effect === 'reset') {
+        // Reset fade effects
+        panelEl.style.removeProperty('opacity');
+        panelEl.style.removeProperty('animation');
+        console.log(`✨ Reset fade effects for panel ${index + 1}`);
+      } else if (effect === 'enabled') {
+        // Enable fade-in effect
+        panelEl.style.setProperty('opacity', '0', 'important');
+        panelEl.style.setProperty('animation', 'fadeIn 0.8s ease-in forwards', 'important');
+        console.log(`✨ Enabled fade effect for panel ${index + 1}`);
+      }
+    });
+    
+    // Store the preference
+    if (effect !== 'reset') {
+      localStorage.setItem('fadeEffect', effect);
+      console.log(`✨ Saved fade effect preference: ${effect}`);
+    } else {
+      localStorage.removeItem('fadeEffect');
+      console.log(`✨ Removed fade effect preference`);
+    }
   };
 
   // Apply city sorting
@@ -413,6 +637,21 @@ function App() {
     // Reset icons
     applyIconVisibility(false);
     localStorage.removeItem('weatherIconsVisible');
+    
+    // NEW: Reset icon sizing
+    applyIconSize('reset');
+    
+    // NEW: Reset layout
+    applyLayoutChange('reset');
+    
+    // NEW: Reset spacing
+    applySpacingChange('reset');
+    
+    // NEW: Reset animations
+    applyAnimationSetting('reset');
+    
+    // NEW: Reset fade effects
+    applyFadeEffect('reset');
     
     // Reset city order
     resetCityOrder();

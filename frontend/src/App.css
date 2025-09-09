@@ -125,4 +125,61 @@ body.bg-green-500 {
 .show-weather-icons .weather-icon {
   opacity: 1 !important;
   visibility: visible !important;
+}
+
+/* Animation keyframes for fade effects */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Smooth transitions for all weather panels */
+.weather-panel {
+  transition: all 0.3s ease-in-out;
+}
+
+/* Grid layout styles */
+.cities-container.grid-layout {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)) !important;
+  gap: 1.5rem !important;
+}
+
+/* List layout styles */
+.cities-container.list-layout {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 1rem !important;
+}
+
+/* Icon size variations */
+.weather-icon.large {
+  width: 48px !important;
+  height: 48px !important;
+  font-size: 48px !important;
+  transform: scale(1.5) !important;
+}
+
+.weather-icon.small {
+  width: 16px !important;
+  height: 16px !important;
+  font-size: 16px !important;
+  transform: scale(0.75) !important;
 } 
