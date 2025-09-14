@@ -16,36 +16,18 @@
 ### Rule 1: Automatic Backend & Frontend Validation & Startup
 **ON EVERY SESSION STARTUP, I MUST:**
 
-#### Backend Validation & Startup:
-1. Immediately run backend validation using one of these methods:
-   ```bash
-   curl http://localhost:5000/
+#### Backend & Frontend Validation & Startup:
+1. **IMMEDIATELY RUN THE RESTART SCRIPT:**
+   ```powershell
+   .\restart-servers.ps1
    ```
-   OR
-   ```bash
-   cd backend
-   npm run validate
-   ```
-2. Report validation results to user
-3. **IF BACKEND IS NOT RUNNING, AUTOMATICALLY START IT:**
-   ```bash
-   cd backend
-   npm install
-   npm run build
-   Start-Process node -ArgumentList "dist/server.js" -WindowStyle Hidden
-   ```
-4. Wait 3-5 seconds for server to start
-5. Re-validate with curl test: `curl http://localhost:5000/`
-6. Only proceed after confirming backend is running on port 5000
-
-#### Frontend Validation & Startup:
-7. **IMMEDIATELY AFTER BACKEND IS RUNNING, START FRONTEND:**
-   ```bash
-   Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd 'G:\My Drive\MyTemp\GenAI\GenAI_Coding_Tests\weather-app-v3\frontend'; yarn dev"
-   ```
-8. Wait 3-5 seconds for frontend to start
-9. Verify frontend is running: `curl http://localhost:5173/`
-10. Report both services status to user
+2. The script will automatically:
+   - Check and kill any existing processes on ports 5000 and 5173
+   - Start backend server (port 5000)
+   - Start frontend server (port 5173)
+   - Provide clear feedback on each step
+3. Wait for script completion and verify both services are running
+4. Report final status to user
 
 **CRITICAL:** Both services must be running before proceeding with any other tasks
 
@@ -59,11 +41,25 @@
 5. **Document New Features**: Add completed features to the "✅ Completed Features" list
 6. **Update Progress**: Move items from "🔄 In Progress" to "✅ Completed Features" as appropriate
 
-### Rule 3: Git Commit After Task Completion
+### Rule 3: Testing and Git Commit After Task Completion
 **ON EVERY TASK COMPLETION, I MUST:**
 
-1. **Stage All Changes**: `git add .` to stage all modified files
-2. **Create Descriptive Commit**: Use clear, descriptive commit message following format:
+1. **Run Full Test Suite**: Execute comprehensive testing to ensure system stability
+   ```powershell
+   .\test-ai-basic.ps1
+   ```
+2. **Run Frontend Tests**: Execute unit and integration tests
+   ```bash
+   cd frontend
+   yarn test:run
+   ```
+3. **Run E2E Tests**: Execute end-to-end tests
+   ```bash
+   cd frontend
+   yarn test:ai
+   ```
+4. **Stage All Changes**: `git add .` to stage all modified files
+5. **Create Descriptive Commit**: Use clear, descriptive commit message following format:
    ```
    feat: [Feature Name] - [Brief Description]
    
@@ -73,9 +69,9 @@
    
    Closes #[task-id] (if applicable)
    ```
-3. **Verify Commit**: `git status` to confirm clean working directory
-4. **Push Changes**: `git push origin [branch-name]` to sync with remote
-5. **Update Todo**: Mark task as completed with commit hash reference
+6. **Verify Commit**: `git status` to confirm clean working directory
+7. **Push Changes**: `git push origin [branch-name]` to sync with remote
+8. **Update Todo**: Mark task as completed with commit hash reference
 
 **Architecture Update Triggers:**
 - ✅ Any feature completion
@@ -112,63 +108,39 @@
 ## Backend & Frontend Validation Instructions
 
 ### Quick Validation Commands
-When starting a new session, run these commands to validate both services:
+When starting a new session, use the PowerShell restart script for reliable startup:
 
-#### Backend Validation:
-**Option 1: Using the validation script**
-```bash
-cd backend
-npm run validate
+#### Recommended Approach:
+```powershell
+.\restart-servers.ps1
 ```
 
-**Option 2: Manual validation**
-```bash
-# Check if server is running
+This script will:
+- ✅ Check and kill existing processes on ports 5000 and 5173
+- ✅ Start backend server (port 5000) with clear feedback
+- ✅ Start frontend server (port 5173) with clear feedback
+- ✅ Provide status updates for each step
+- ✅ Handle errors gracefully
+
+#### Manual Validation (if needed):
+```powershell
+# Check backend
 curl http://localhost:5000/
+
+# Check frontend  
+curl http://localhost:5173/
 
 # Test weather endpoint
 curl http://localhost:5000/api/weather/London
 ```
 
-**Option 3: Using existing tests**
-```bash
-cd backend
-npm test
-```
-
-#### Frontend Validation:
-```bash
-# Check if frontend is running
-curl http://localhost:5173/
-
-# Expected: HTML response with status 200
-```
-
 ### Expected Results
-- ✅ **Backend:** Server responds on port 5000
+- ✅ **Backend:** Server responds on port 5000 with JSON message
 - ✅ **Backend:** Weather API returns valid data structure
-- ✅ **Backend:** All endpoints functional
 - ✅ **Frontend:** Server responds on port 5173 with HTML content
+- ✅ **Both:** Clear startup feedback from PowerShell script
 
-### If Services Are Not Running
-
-#### Backend Startup:
-```bash
-cd backend
-npm install
-npm run build
-Start-Process node -ArgumentList "dist/server.js" -WindowStyle Hidden
-```
-
-#### Frontend Startup:
-```bash
-Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd 'G:\My Drive\MyTemp\GenAI\GenAI_Coding_Tests\weather-app-v3\frontend'; yarn dev"
-```
-
-**Note:** 
-- Backend uses `Start-Process node` for background operation
-- Frontend uses `Start-Process powershell` with new window to avoid blocking current terminal
-- Both services must be validated with curl tests before proceeding
+**Note:** The PowerShell script (`restart-servers.ps1`) is the preferred method as it provides clear feedback and handles all startup tasks automatically.
 
 
 ## Active Tasks
